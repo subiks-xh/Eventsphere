@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Event Reports</h2>
+
+{% if events %}
+    {% for event in events %}
+    <div class="card" style="border-top: 5px solid #0056b3;">
+        <h3>{{ event.event_name }}</h3>
+        
+        <table style="width: 100%; max-width: 600px; margin-bottom: 15px;">
+            <tr><td><strong>Date:</strong></td><td>{{ event.date }}</td></tr>
+            <tr><td><strong>Venue:</strong></td><td>{{ event.venue }}</td></tr>
+            <tr><td><strong>Capacity:</strong></td><td>{{ event.get('capacity', 0) }}</td></tr>
+            
+            {% set attendees = event.get('attendees', []) %}
+            {% set total_reg = attendees|length %}
+            {% set checked_in = namespace(count=0) %}
+            {% set cert_eligible = namespace(count=0) %}
+            
+            {% for a in attendees %}
+                {% if a.status == 'Checked In' %}
+                    {% set checked_in.count = checked_in.count + 1 %}
+                {% endif %}
+                {% if a.certificate == 'Eligible' %}
+                    {% set cert_eligible.count = cert_eligible.count + 1 %}
+                {% endif %}
+            {% endfor %}
+            
+            <tr><td><strong>Registrations:</strong></td><td>{{ total_reg }}</td></tr>
+            <tr><td><strong>Checked In:</strong></td><td>{{ checked_in.count }}</td></tr>
+            <tr><td><strong>Waitlisted:</strong></td><td>{{ event.get('waitlist', [])|length }}</td></tr>
+            
+            <tr>
+                <td><strong>Attendance Percentage:</strong></td>
+                <td>
+                    {% if event.get('capacity', 0) > 0 %}
+                        {{ ((checked_in.count / event.get('capacity')) * 100)|int }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+            </tr>
+            
+            <tr><td><strong>Certificate Eligible:</strong></td><td>{{ cert_eligible.count }}</td></tr>
+        </table>
+        
+        <h4>Assigned Vendors:</h4>
+        {% if event.get('vendors') %}
+            <ul>
+                {% for v in event.vendors %}
+                    <li>{{ v.name }} - {{ v.service }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>None</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <p>No events available for report.</p>
+    </div>
+{% endif %}
+
+{% endblock %}

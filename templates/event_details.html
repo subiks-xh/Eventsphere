@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>{{ event.event_name }} ({{ event.event_id }})</h2>
+    
+    <table style="width: 100%; max-width: 600px; margin-bottom: 20px;">
+        <tr><td><strong>Date:</strong></td><td>{{ event.date }}</td></tr>
+        <tr><td><strong>Time:</strong></td><td>{{ event.time }}</td></tr>
+        <tr><td><strong>Venue:</strong></td><td>{{ event.venue }}</td></tr>
+        <tr><td><strong>Resources:</strong></td><td>{{ event.resources }}</td></tr>
+        <tr><td><strong>Capacity:</strong></td><td>{{ event.get('capacity', 'Not Set') }}</td></tr>
+        <tr><td><strong>Status:</strong></td><td>{{ event.status }}</td></tr>
+        <tr>
+            <td><strong>Registrations:</strong></td>
+            <td>{{ event.get('attendees', [])|length }}</td>
+        </tr>
+        <tr>
+            <td><strong>Waitlisted:</strong></td>
+            <td>{{ event.get('waitlist', [])|length }}</td>
+        </tr>
+    </table>
+
+    <h3>Assigned Vendors</h3>
+    {% if event.get('vendors') %}
+        <ul>
+            {% for vendor in event.vendors %}
+                <li>{{ vendor.name }} ({{ vendor.service }})</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No vendors assigned yet.</p>
+    {% endif %}
+
+    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="{{ url_for('register', event_id=event.event_id) }}" class="btn">Register Attendee</a>
+        <a href="{{ url_for('attendees', event_id=event.event_id) }}" class="btn">View Attendees</a>
+        <a href="{{ url_for('attendance', event_id=event.event_id) }}" class="btn">Mark Attendance</a>
+        <a href="{{ url_for('waitlist', event_id=event.event_id) }}" class="btn">View Waitlist</a>
+        <a href="{{ url_for('assign_vendor', event_id=event.event_id) }}" class="btn">Assign Vendor</a>
+        <a href="{{ url_for('certificate_status', event_id=event.event_id) }}" class="btn">Certificate Status</a>
+    </div>
+</div>
+{% endblock %}

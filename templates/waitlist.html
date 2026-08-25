@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Waitlist for: {{ event.event_name }}</h2>
+    
+    {% if event.get('waitlist') %}
+        <table>
+            <tr>
+                <th>Position</th>
+                <th>Registration ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+            </tr>
+            {% for w in event.waitlist %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ w.reg_id }}</td>
+                <td>{{ w.name }}</td>
+                <td>{{ w.email }}</td>
+                <td>{{ w.phone }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <p style="margin-top: 15px; font-style: italic;">Waitlisted attendees will be automatically promoted if a registered attendee cancels.</p>
+    {% else %}
+        <p>Waitlist is empty.</p>
+    {% endif %}
+    
+    <a href="{{ url_for('event_details', event_id=event.event_id) }}" class="btn" style="margin-top: 20px;">Back to Event</a>
+</div>
+{% endblock %}

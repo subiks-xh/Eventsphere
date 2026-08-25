@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Attendees for: {{ event.event_name }}</h2>
+    
+    {% if event.get('attendees') %}
+        <table>
+            <tr>
+                <th>Registration ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Ticket ID</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            {% for a in event.attendees %}
+            <tr>
+                <td>{{ a.reg_id }}</td>
+                <td>{{ a.name }}</td>
+                <td>{{ a.email }}</td>
+                <td>{{ a.phone }}</td>
+                <td>{{ a.ticket_id }}</td>
+                <td>{{ a.status }}</td>
+                <td>
+                    <form action="{{ url_for('cancel_registration', event_id=event.event_id, ticket_id=a.ticket_id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-small" onclick="return confirm('Are you sure you want to cancel this registration?');">Cancel</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No registrations yet.</p>
+    {% endif %}
+    
+    <a href="{{ url_for('event_details', event_id=event.event_id) }}" class="btn" style="margin-top: 20px;">Back to Event</a>
+</div>
+{% endblock %}

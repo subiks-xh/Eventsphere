@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>All Events</h2>
+<a href="{{ url_for('create_event') }}" class="btn" style="margin-bottom: 20px;">+ Create New Event</a>
+
+{% if events %}
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Venue</th>
+            <th>Capacity</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        {% for event in events %}
+        <tr>
+            <td>{{ event.event_id }}</td>
+            <td>{{ event.event_name }}</td>
+            <td>{{ event.date }}</td>
+            <td>{{ event.time }}</td>
+            <td>{{ event.venue }}</td>
+            <td>{{ event.get('capacity', 0) }}</td>
+            <td>{{ event.status }}</td>
+            <td>
+                <a href="{{ url_for('event_details', event_id=event.event_id) }}" class="btn btn-small">View</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <div class="card">
+        <p>No events found.</p>
+    </div>
+{% endif %}
+{% endblock %}

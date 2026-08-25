@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Certificate Status for: {{ event.event_name }}</h2>
+    
+    {% if event.get('attendees') %}
+        <table>
+            <tr>
+                <th>Participant Name</th>
+                <th>Ticket ID</th>
+                <th>Attendance</th>
+                <th>Certificate Status</th>
+            </tr>
+            {% for a in event.attendees %}
+            <tr>
+                <td>{{ a.name }}</td>
+                <td>{{ a.ticket_id }}</td>
+                <td>
+                    {% if a.status == 'Checked In' %}
+                        <span style="color: green; font-weight: bold;">{{ a.status }}</span>
+                    {% else %}
+                        <span style="color: gray;">{{ a.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if a.certificate == 'Eligible' %}
+                        <span style="color: white; background-color: #28a745; padding: 3px 8px; border-radius: 12px; font-size: 12px;">{{ a.certificate }}</span>
+                    {% else %}
+                        <span style="color: white; background-color: #6c757d; padding: 3px 8px; border-radius: 12px; font-size: 12px;">{{ a.get('certificate', 'Not Eligible') }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No attendees found.</p>
+    {% endif %}
+    
+    <a href="{{ url_for('event_details', event_id=event.event_id) }}" class="btn" style="margin-top: 20px;">Back to Event</a>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Vendor Management</h2>
+    
+    <h3>All Vendors</h3>
+    {% if vendors %}
+        <table>
+            <tr>
+                <th>Vendor ID</th>
+                <th>Name</th>
+                <th>Service</th>
+            </tr>
+            {% for v in vendors %}
+            <tr>
+                <td>{{ v.vendor_id }}</td>
+                <td>{{ v.name }}</td>
+                <td>{{ v.service }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No vendors found.</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>Add New Vendor</h3>
+    <form method="POST">
+        <div class="form-group">
+            <label>Vendor ID:</label>
+            <input type="text" name="vendor_id" required>
+        </div>
+        <div class="form-group">
+            <label>Vendor Name:</label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="form-group">
+            <label>Service:</label>
+            <input type="text" name="service" required>
+        </div>
+        <button type="submit" class="btn">Add Vendor</button>
+    </form>
+</div>
+{% endblock %}

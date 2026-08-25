@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Register for: {{ event.event_name }}</h2>
+    
+    {% if is_full %}
+        <div class="messages" style="background-color: #f8d7da; color: #721c24; border-color: #f5c6cb;">
+            <p><strong>Event is Full!</strong> The capacity for this event has been reached.</p>
+            <form method="POST">
+                <input type="hidden" name="join_waitlist" value="yes">
+                <!-- Keep the entered data so the user doesn't have to re-type -->
+                <input type="hidden" name="reg_id" value="{{ request.form.get('reg_id', '') }}">
+                <input type="hidden" name="name" value="{{ request.form.get('name', '') }}">
+                <input type="hidden" name="email" value="{{ request.form.get('email', '') }}">
+                <input type="hidden" name="phone" value="{{ request.form.get('phone', '') }}">
+                
+                <p>Would you like to join the waitlist?</p>
+                <button type="submit" class="btn">Yes, Join Waitlist</button>
+                <a href="{{ url_for('event_details', event_id=event.event_id) }}" class="btn" style="background-color: #6c757d;">No, Go Back</a>
+            </form>
+        </div>
+    {% else %}
+        <form method="POST">
+            <input type="hidden" name="join_waitlist" value="no">
+            <div class="form-group">
+                <label>Registration ID:</label>
+                <input type="text" name="reg_id" required>
+            </div>
+            <div class="form-group">
+                <label>Name:</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Email:</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Phone:</label>
+                <input type="text" name="phone" required>
+            </div>
+            <button type="submit" class="btn">Register</button>
+            <a href="{{ url_for('event_details', event_id=event.event_id) }}" class="btn" style="background-color: #6c757d;">Cancel</a>
+        </form>
+    {% endif %}
+</div>
+{% endblock %}

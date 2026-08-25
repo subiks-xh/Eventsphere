@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Mark Attendance for: {{ event.event_name }}</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label>Enter Ticket ID:</label>
+            <input type="text" name="ticket_id" required>
+        </div>
+        <button type="submit" class="btn">Mark Checked In</button>
+        <a href="{{ url_for('event_details', event_id=event.event_id) }}" class="btn" style="background-color: #6c757d;">Go Back</a>
+    </form>
+</div>
+{% endblock %}

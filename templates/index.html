@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Dashboard</h2>
+
+<div class="dashboard-stats">
+    <div class="stat-box">
+        <h3>{{ total_events }}</h3>
+        <p>Total Events</p>
+    </div>
+    <div class="stat-box">
+        <h3>{{ total_registrations }}</h3>
+        <p>Total Registrations</p>
+    </div>
+    <div class="stat-box">
+        <h3>{{ total_checked_in }}</h3>
+        <p>Checked In</p>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Upcoming Events</h3>
+    {% if events %}
+        <table>
+            <tr>
+                <th>Event Name</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th>Action</th>
+            </tr>
+            {% for event in events %}
+            <tr>
+                <td>{{ event.event_name }}</td>
+                <td>{{ event.date }}</td>
+                <td>{{ event.venue }}</td>
+                <td><a href="{{ url_for('event_details', event_id=event.event_id) }}" class="btn btn-small">View</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No upcoming events.</p>
+    {% endif %}
+</div>
+{% endblock %}

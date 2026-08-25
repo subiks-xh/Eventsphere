@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Assign Vendor to: {{ event.event_name }}</h2>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label>Select Vendor:</label>
+            <select name="vendor_id" required>
+                <option value="" disabled selected>Select a vendor</option>
+                {% for v in vendors %}
+                    <option value="{{ v.vendor_id }}">{{ v.name }} ({{ v.service }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn">Assign Vendor</button>
+        <a href="{{ url_for('event_details', event_id=event.event_id) }}" class="btn" style="background-color: #6c757d;">Cancel</a>
+    </form>
+    
+    {% if not vendors %}
+        <p style="color: red; margin-top: 10px;">No vendors available. Please add vendors first.</p>
+    {% endif %}
+</div>
+{% endblock %}
