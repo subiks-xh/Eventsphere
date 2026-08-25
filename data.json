@@ -1,5 +1,57 @@
 {
-  "events": [],
-  "vendors": [],
-  "ticket_counter": 1001
+    "events": [
+        {
+            "event_id": "E1",
+            "event_name": "Ai Workshop",
+            "date": "2026-09-01",
+            "time": "10:00 AM",
+            "venue": "Conference Mall",
+            "resources": "Projector",
+            "status": "Planning",
+            "attendees": [
+                {
+                    "reg_id": "R1",
+                    "name": "Rahul",
+                    "email": "rahul@gmail.com",
+                    "phone": "78945613",
+                    "ticket_id": "TKT1001",
+                    "status": "Checked In",
+                    "checkin_time": "2026-08-25 19:00:59",
+                    "certificate": "Eligible"
+                },
+                {
+                    "reg_id": "R3",
+                    "name": "amit",
+                    "email": "amit@gmail.com",
+                    "phone": "4561237891",
+                    "ticket_id": "TKT1003",
+                    "status": "Registered",
+                    "checkin_time": "",
+                    "certificate": "Not Eligible"
+                }
+            ],
+            "vendors": [
+                {
+                    "vendor_id": "V1",
+                    "name": "Food hub",
+                    "service": "catering"
+                }
+            ],
+            "capacity": 2,
+            "waitlist": []
+        }
+    ],
+    "vendors": [
+        {
+            "vendor_id": "V1",
+            "name": "Food hub",
+            "service": "catering"
+        }
+    ],
+    "notifications": [
+        "Registration successful for Ai Workshop. Ticket: TKT1001",
+        "Registration successful for Ai Workshop. Ticket: TKT1002",
+        "Your registration for Ai Workshop has been confirmed from the waitlist. Ticket: TKT1003"
+    ],
+    "ticket_counter": 1004
 }

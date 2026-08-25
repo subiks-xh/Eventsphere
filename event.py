@@ -1,5 +1,5 @@
 class Event:
-    def __init__(self, event_id, event_name, date, time, venue, resources, status="Planning", attendees=None, vendors=None):
+    def __init__(self, event_id, event_name, date, time, venue, resources, status="Planning", attendees=None, vendors=None, capacity=0, waitlist=None):
         self.event_id = event_id
         self.event_name = event_name
         self.date = date
@@ -9,6 +9,8 @@ class Event:
         self.status = status
         self.attendees = attendees if attendees is not None else []
         self.vendors = vendors if vendors is not None else []
+        self.capacity = capacity
+        self.waitlist = waitlist if waitlist is not None else []
 
     def to_dict(self):
         return {
@@ -20,17 +22,21 @@ class Event:
             "resources": self.resources,
             "status": self.status,
             "attendees": self.attendees,
-            "vendors": self.vendors
+            "vendors": self.vendors,
+            "capacity": self.capacity,
+            "waitlist": self.waitlist
         }
 
 class Attendee:
-    def __init__(self, reg_id, name, email, phone, ticket_id, status="Registered"):
+    def __init__(self, reg_id, name, email, phone, ticket_id, status="Registered", checkin_time="", certificate="Not Eligible"):
         self.reg_id = reg_id
         self.name = name
         self.email = email
         self.phone = phone
         self.ticket_id = ticket_id
         self.status = status
+        self.checkin_time = checkin_time
+        self.certificate = certificate
 
     def to_dict(self):
         return {
@@ -39,7 +45,9 @@ class Attendee:
             "email": self.email,
             "phone": self.phone,
             "ticket_id": self.ticket_id,
-            "status": self.status
+            "status": self.status,
+            "checkin_time": self.checkin_time,
+            "certificate": self.certificate
         }
 
 class Vendor:
