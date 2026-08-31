@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block title %}{% if title %}{{ title }} - {% endif %}EventSphere{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-ticket-perforated"></i> My Tickets</h1>
+</div>
+
+{% if tickets %}
+<div class="row">
+    {% for ticket in tickets %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ ticket.event_name }}</h5>
+                    <p class="card-text">
+                        <strong>Ticket ID:</strong> {{ ticket.ticket_id }}<br>
+                        <strong>Date:</strong> {{ ticket.event_date.strftime('%b %d, %Y') }}<br>
+                        <strong>Time:</strong> {{ ticket.event_time }}<br>
+                        <strong>Venue:</strong> {{ ticket.venue_name }}<br>
+                        <strong>Attendee:</strong> {{ ticket.attendee_name }}
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('attendee.view_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        <a href="{{ url_for('attendee.download_ticket', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-download"></i> Download
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    You have no tickets. Register for events to get tickets.
+</div>
+{% endif %}
+{% endblock %}

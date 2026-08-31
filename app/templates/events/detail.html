@@ -1,0 +1,215 @@
+{% extends "layout.html" %}
+
+{% block title %}{% if title %}{{ title }} - {% endif %}EventSphere{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-calendar-event"></i> {{ event.name }}</h1>
+    <div>
+        {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_organizer) %}
+            {% if current_user.id == event.organizer_id or current_user.is_admin %}
+                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                {% if event.status == 'draft' %}
+                    <form action="{{ url_for('events.publish', event_id=event.id) }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-send"></i> Publish
+                        </button>
+                    </form>
+                {% endif %}
+                {% if event.status != 'cancelled' %}
+                    <form action="{{ url_for('events.cancel', event_id=event.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this event?')">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        {% endif %}
+        <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Event Details -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4><i class="bi bi-info-circle"></i> Event Details</h4>
+                <hr>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-calendar"></i> Date:</strong> {{ event.date.strftime('%B %d, %Y') }}</p>
+                        <p><strong><i class="bi bi-clock"></i> Time:</strong> {{ event.time_str }}</p>
+                        <p><strong><i class="bi bi-hourglass-split"></i> Duration:</strong> {{ "%.1f"|format(event.duration) }} hours</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="bi bi-geo-alt"></i> Venue:</strong> 
+                            {% if event.venue %}
+                                <a href="{{ url_for('venue.detail', venue_id=event.venue.id) }}">{{ event.venue.name }}</a>
+                                <br><small class="text-muted">{{ event.venue.full_address }}</small>
+                            {% else %}
+                                TBD
+                            {% endif %}
+                        </p>
+                        <p><strong><i class="bi bi-person"></i> Organizer:</strong> {{ event.organizer.full_name }}</p>
+                    </div>
+                </div>
+                
+                {% if event.description %}
+                    <div class="mb-3">
+                        <h5>Description</h5>
+                        <p>{{ event.description }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>Category:</strong> {{ event.category|title }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>Registrations:</strong> {{ event.confirmed_registrations_count }}/{{ event.capacity }}</p>
+                    </div>
+                </div>
+                
+                {% if event.registration_deadline %}
+                    <p><strong>Registration Deadline:</strong> {{ event.registration_deadline.strftime('%B %d, %Y %I:%M %p') }}</p>
+                {% endif %}
+                
+                <!-- Venue Conflict Warning -->
+                {% if has_conflict and conflicting_events %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Venue Conflict Detected!</strong>
+                        <p>This event conflicts with:</p>
+                        <ul>
+                            {% for conflict in conflicting_events %}
+                                <li><a href="{{ url_for('events.detail', event_id=conflict.id) }}">{{ conflict.name }}</a> 
+                                    on {{ conflict.date.strftime('%b %d, %Y') }} at {{ conflict.time_str }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Registration Status -->
+        {% if current_user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h4><i class="bi bi-person-check"></i> My Registration Status</h4>
+                    <hr>
+                    
+                    {% if is_registered %}
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle"></i> You are registered for this event!
+                            {% if registration.has_ticket %}
+                                <p class="mb-0">
+                                    <a href="{{ url_for('attendee.view_ticket', ticket_id=registration.ticket.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-ticket-perforated"></i> View Ticket
+                                    </a>
+                                    {% if registration.has_checked_in %}
+                                        <span class="badge bg-success ms-2">Checked In</span>
+                                    {% endif %}
+                                </p>
+                            {% endif %}
+                        </div>
+                        
+                        {% if event.status == 'registration_open' and not registration.has_checked_in %}
+                            <form action="{{ url_for('events.cancel_registration', event_id=event.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel your registration?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-x-circle"></i> Cancel Registration
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% elif is_on_waitlist %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-hourglass-split"></i> You are on the waitlist at position {{ waitlist_entry.position }}.
+                        </div>
+                    {% else %}
+                        {% if event.status == 'registration_open' %}
+                            {% if event.is_full %}
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle"></i> This event is full. 
+                                    <form action="{{ url_for('events.register', event_id=event.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-list"></i> Join Waitlist
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <form action="{{ url_for('events.register', event_id=event.id) }}" method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-calendar-plus"></i> Register Now
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-info-circle"></i> Registration is not currently open for this event.
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Event Sidebar -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-people"></i> Registration Info</h5>
+                <p class="card-text">
+                    <strong>Status:</strong> <span class="badge bg-{{ event.status|lower }}">{{ event.status|replace('_', ' ')|title }}</span>
+                </p>
+                <p class="card-text">
+                    <strong>Confirmed:</strong> {{ event.confirmed_registrations_count }}<br>
+                    <strong>Waitlist:</strong> {{ event.waitlist_count }}<br>
+                    <strong>Capacity:</strong> {{ event.capacity }}
+                </p>
+                
+                {% if event.capacity > 0 %}
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ (event.confirmed_registrations_count / event.capacity * 100)|int }}%"
+                             aria-valuenow="{{ (event.confirmed_registrations_count / event.capacity * 100)|int }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                            {{ (event.confirmed_registrations_count / event.capacity * 100)|int }}%
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_organizer) %}
+                    {% if current_user.id == event.organizer_id or current_user.is_admin %}
+                        <a href="{{ url_for('organizer.event_registrations', event_id=event.id) }}" class="btn btn-sm btn-outline-primary w-100">
+                            <i class="bi bi-people"></i> View Registrations ({{ event.confirmed_registrations_count }})
+                        </a>
+                        <a href="{{ url_for('organizer.checkin', event_id=event.id) }}" class="btn btn-sm btn-outline-success w-100 mt-2">
+                            <i class="bi bi-check-square"></i> Check-in ({{ event.attendance_count }})
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if event.organizer %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-person"></i> Organizer</h5>
+                    <p class="card-text">
+                        <strong>{{ event.organizer.full_name }}</strong><br>
+                        <small class="text-muted">{{ event.organizer.username }}</small>
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

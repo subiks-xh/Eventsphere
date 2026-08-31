@@ -1,0 +1,30 @@
+# Flask Core
+Flask==2.3.3
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+WTForms==3.1.2
+Werkzeug==2.3.3
+python-dotenv==1.0.0
+
+# Database
+psycopg2-binary==2.9.9
+SQLAlchemy==2.0.23
+
+# Utilities
+qrcode==7.4.2
+Pillow==10.1.0
+ReportLab==4.0.7
+
+# Validation
+email-validator==2.1.0
+phonenumbers==8.13.27
+
+# Testing
+pytest==7.4.3
+pytest-flask==1.2.0
+pytest-cov==4.1.0
+
+# Development
+python-dateutil==2.8.2

@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block title %}{% if title %}{{ title }} - {% endif %}EventSphere{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-calendar-event"></i> Events</h1>
+    {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_organizer) %}
+        <a href="{{ url_for('events.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create Event
+        </a>
+    {% endif %}
+</div>
+
+{% if events %}
+<div class="row">
+    {% for event in events %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if event.image %}
+                    <img src="{{ event.image }}" class="card-img-top" alt="{{ event.name }}" style="height: 180px; object-fit: cover;">
+                {% else %}
+                    <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
+                        <i class="bi bi-calendar-event text-white" style="font-size: 3rem;"></i>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ event.name }}</h5>
+                    <p class="card-text text-muted">
+                        <i class="bi bi-calendar"></i> {{ event.date.strftime('%b %d, %Y') }}<br>
+                        <i class="bi bi-clock"></i> {{ event.time_str }}<br>
+                        <i class="bi bi-geo-alt"></i> {{ event.venue.name if event.venue else 'TBD' }}
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-{{ event.status|lower }}">
+                            {{ event.status|replace('_', ' ')|title }}
+                        </span>
+                        <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">
+    No events found.
+</div>
+{% endif %}
+{% endblock %}

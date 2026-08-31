@@ -1,0 +1,197 @@
+{% extends "layout.html" %}
+
+{% block title %}My Dashboard - EventSphere{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-speedometer2"></i> My Dashboard</h1>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-calendar-event text-primary" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ upcoming_events|length }}</h3>
+                <p class="text-muted mb-0">Upcoming Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-ticket-perforated text-success" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ registrations|length }}</h3>
+                <p class="text-muted mb-0">Total Registrations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-award text-info" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ certificates|length }}</h3>
+                <p class="text-muted mb-0">My Certificates</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Quick Links</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('attendee.events') }}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-calendar-event"></i> Browse Events
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('attendee.my_registrations') }}" class="btn btn-outline-success w-100">
+                    <i class="bi bi-ticket-perforated"></i> My Registrations
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('attendee.my_tickets') }}" class="btn btn-outline-info w-100">
+                    <i class="bi bi-ticket"></i> My Tickets
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('attendee.notifications') }}" class="btn btn-outline-warning w-100">
+                    <i class="bi bi-bell"></i> Notifications
+                    {% if unread_count > 0 %}
+                        <span class="badge bg-danger">{{ unread_count }}</span>
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Events -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-calendar"></i> Upcoming Events</h5>
+    </div>
+    <div class="card-body">
+        {% if upcoming_events %}
+            <div class="row">
+                {% for event in upcoming_events %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ event.name }}</h5>
+                                <p class="card-text">
+                                    <i class="bi bi-calendar"></i> {{ event.date.strftime('%b %d, %Y') }}<br>
+                                    <i class="bi bi-clock"></i> {{ event.time_str }}<br>
+                                    <i class="bi bi-geo-alt"></i> {{ event.venue.name if event.venue else 'TBD' }}
+                                </p>
+                                <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-primary btn-sm">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No upcoming events.</p>
+            <a href="{{ url_for('attendee.events') }}" class="btn btn-primary">Browse Events</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Waitlist Status -->
+{% if waitlist_entries %}
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-hourglass-split"></i> My Waitlist Status</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Position</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in waitlist_entries %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('events.detail', event_id=entry.event.id) }}" class="text-decoration-none">
+                                    {{ entry.event.name }}
+                                </a>
+                            </td>
+                            <td>{{ entry.event.date.strftime('%b %d, %Y') }}</td>
+                            <td>{{ entry.position }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Past Events -->
+<div class="card">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Past Events</h5>
+    </div>
+    <div class="card-body">
+        {% if past_events %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Certificate</th>
+                            <th>Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in past_events %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
+                                        {{ event.name }}
+                                    </a>
+                                </td>
+                                <td>{{ event.date.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    {% for cert in certificates %}
+                                        {% if cert.event_id == event.id %}
+                                            <a href="{{ url_for('attendee.download_certificate', certificate_id=cert.id) }}" class="btn btn-sm btn-outline-success">
+                                                <i class="bi bi-download"></i> Download
+                                            </a>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    {% if event.status == 'completed' %}
+                                        <a href="{{ url_for('attendee.submit_feedback', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-chat-left-text"></i> Submit
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">Not available</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No past events.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

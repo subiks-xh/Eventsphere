@@ -1,10 +1,17 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 import datetime
 from main import loadData, saveData
 from event import Event, Attendee, Vendor
 
 app = Flask(__name__)
-app.secret_key = 'eventsphere_secret_key' # Needed for flash messages
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///eventsphere.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = 'eventsphere_secret_key'  # Needed for flash messages
+
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 @app.route('/')
 def home():

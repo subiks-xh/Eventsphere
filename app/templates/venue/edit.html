@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block title %}{% if title %}{{ title }} - {% endif %}EventSphere{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-pencil"></i> Edit {{ venue.name }}</h1>
+    <a href="{{ url_for('venue.detail', venue_id=venue.id) }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Venue
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('venue.edit', venue_id=venue.id) }}">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control") }}
+                            {% if form.name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.name.errors %}
+                                        <small>{{ error }}</small><br>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.capacity.label(class="form-label") }}
+                            {{ form.capacity(class="form-control") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.address.label(class="form-label") }}
+                        {{ form.address(class="form-control") }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.city.label(class="form-label") }}
+                            {{ form.city(class="form-control") }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.state.label(class="form-label") }}
+                            {{ form.state(class="form-control") }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.postal_code.label(class="form-label") }}
+                            {{ form.postal_code(class="form-control") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.country.label(class="form-label") }}
+                            {{ form.country(class="form-control") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.status.label(class="form-label") }}
+                            {{ form.status(class="form-select") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control", rows=3) }}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.contact_phone.label(class="form-label") }}
+                            {{ form.contact_phone(class="form-control") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.contact_email.label(class="form-label") }}
+                            {{ form.contact_email(class="form-control") }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Update Venue
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

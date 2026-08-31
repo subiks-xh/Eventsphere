@@ -1,0 +1,236 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard - EventSphere{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-people text-primary" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_users }}</h3>
+                <p class="text-muted mb-0">Total Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-calendar-event text-success" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_events }}</h3>
+                <p class="text-muted mb-0">Total Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-geo-alt text-info" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_venues }}</h3>
+                <p class="text-muted mb-0">Total Venues</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-person-workspace text-warning" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_vendors }}</h3>
+                <p class="text-muted mb-0">Total Vendors</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-ticket-perforated text-secondary" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_registrations }}</h3>
+                <p class="text-muted mb-0">Total Registrations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-person-check text-primary" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_attendees }}</h3>
+                <p class="text-muted mb-0">Total Attendees</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-person-plus text-success" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_organizers }}</h3>
+                <p class="text-muted mb-0">Total Organizers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-calendar-check text-info" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ upcoming_events|length }}</h3>
+                <p class="text-muted mb-0">Upcoming Events</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Quick Links</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-people"></i> Manage Users
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('venue.index') }}" class="btn btn-outline-success w-100">
+                    <i class="bi bi-geo-alt"></i> Manage Venues
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('events.index') }}" class="btn btn-outline-info w-100">
+                    <i class="bi bi-calendar-event"></i> View Events
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-warning w-100">
+                    <i class="bi bi-journal"></i> View Audit Logs
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Recent Events</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_events %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Date</th>
+                                    <th>Organizer</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in recent_events %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
+                                                {{ event.name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ event.date.strftime('%b %d, %Y') }}</td>
+                                        <td>{{ event.organizer.username }}</td>
+                                        <td><span class="badge bg-{{ event.status|lower }}">{{ event.status|replace('_', ' ')|title }}</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No recent events.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Recent Users</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>{{ user.full_name }}</td>
+                                        <td><span class="badge bg-primary">{{ user.role|title }}</span></td>
+                                        <td><span class="badge bg-{{ 'success' if user.is_active else 'secondary' }}">{{ user.status }}</span></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No recent users.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Events -->
+<div class="card">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-calendar"></i> Upcoming Events</h5>
+    </div>
+    <div class="card-body">
+        {% if upcoming_events %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Venue</th>
+                            <th>Organizer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in upcoming_events %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
+                                        {{ event.name }}
+                                    </a>
+                                </td>
+                                <td>{{ event.date.strftime('%b %d, %Y') }}</td>
+                                <td>{{ event.venue.name if event.venue else 'TBD' }}</td>
+                                <td>{{ event.organizer.username }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No upcoming events.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -10,21 +10,21 @@
             "status": "Planning",
             "attendees": [
                 {
-                    "reg_id": "R1",
-                    "name": "Rahul",
-                    "email": "rahul@gmail.com",
-                    "phone": "78945613",
-                    "ticket_id": "TKT1001",
-                    "status": "Checked In",
-                    "checkin_time": "2026-08-25 19:00:59",
-                    "certificate": "Eligible"
-                },
-                {
                     "reg_id": "R3",
                     "name": "amit",
                     "email": "amit@gmail.com",
                     "phone": "4561237891",
                     "ticket_id": "TKT1003",
+                    "status": "Registered",
+                    "checkin_time": "",
+                    "certificate": "Not Eligible"
+                },
+                {
+                    "reg_id": "R102",
+                    "name": "gokul",
+                    "email": "gokul@gmail.com",
+                    "phone": "1234567890",
+                    "ticket_id": "TKT1004",
                     "status": "Registered",
                     "checkin_time": "",
                     "certificate": "Not Eligible"
@@ -51,7 +51,8 @@
     "notifications": [
         "Registration successful for Ai Workshop. Ticket: TKT1001",
         "Registration successful for Ai Workshop. Ticket: TKT1002",
-        "Your registration for Ai Workshop has been confirmed from the waitlist. Ticket: TKT1003"
+        "Your registration for Ai Workshop has been confirmed from the waitlist. Ticket: TKT1003",
+        "Your registration for Ai Workshop has been confirmed from the waitlist. Ticket: TKT1004"
     ],
-    "ticket_counter": 1004
+    "ticket_counter": 1005
 }

@@ -1,0 +1,239 @@
+{% extends "layout.html" %}
+
+{% block title %}Organizer Dashboard - EventSphere{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-speedometer2"></i> Organizer Dashboard</h1>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-calendar-event text-primary" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_events }}</h3>
+                <p class="text-muted mb-0">Total Events</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-ticket-perforated text-success" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_registrations }}</h3>
+                <p class="text-muted mb-0">Total Registrations</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-person-check text-info" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ total_attendance }}</h3>
+                <p class="text-muted mb-0">Total Check-ins</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="bi bi-calendar text-warning" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ upcoming_events|length }}</h3>
+                <p class="text-muted mb-0">Upcoming Events</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Quick Links</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('organizer.my_events') }}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-calendar-event"></i> My Events
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('events.create') }}" class="btn btn-outline-success w-100">
+                    <i class="bi bi-plus-circle"></i> Create Event
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{{ url_for('venue.index') }}" class="btn btn-outline-info w-100">
+                    <i class="bi bi-geo-alt"></i> Venues
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="#" class="btn btn-outline-warning w-100">
+                    <i class="bi bi-people"></i> Vendors
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- My Events -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-calendar-event"></i> My Recent Events</h5>
+    </div>
+    <div class="card-body">
+        {% if my_events %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Registrations</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in my_events %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
+                                        {{ event.name }}
+                                    </a>
+                                </td>
+                                <td>{{ event.date.strftime('%b %d, %Y') }}</td>
+                                <td>{{ event.confirmed_registrations_count }}</td>
+                                <td><span class="badge bg-{{ event.status|lower }}">{{ event.status|replace('_', ' ')|title }}</span></td>
+                                <td>
+                                    <a href="{{ url_for('organizer.event_registrations', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-people"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No events created yet.</p>
+            <a href="{{ url_for('events.create') }}" class="btn btn-primary">Create Your First Event</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Upcoming Events -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-calendar"></i> Upcoming Events</h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_events %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Date</th>
+                                    <th>Venue</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in upcoming_events %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
+                                                {{ event.name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ event.date.strftime('%b %d, %Y') }}</td>
+                                        <td>{{ event.venue.name if event.venue else 'TBD' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No upcoming events.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Events with High Waitlist</h5>
+            </div>
+            <div class="card-body">
+                {% if high_waitlist_events %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Waitlist</th>
+                                    <th>Capacity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in high_waitlist_events %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
+                                                {{ event.name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ event.waitlist_count }}</td>
+                                        <td>{{ event.capacity }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">No events with high waitlist.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Registrations -->
+<div class="card">
+    <div class="card-header bg-light">
+        <h5 class="mb-0"><i class="bi bi-person-plus"></i> Recent Registrations</h5>
+    </div>
+    <div class="card-body">
+        {% if recent_registrations %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Event</th>
+                            <th>Attendee</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in recent_registrations %}
+                            <tr>
+                                <td>{{ reg.event.name }}</td>
+                                <td>{{ reg.user.full_name }}</td>
+                                <td>{{ reg.registration_date.strftime('%b %d, %Y') }}</td>
+                                <td><span class="badge bg-{{ 'success' if reg.is_confirmed else 'secondary' }}">{{ reg.status|title }}</span></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted mb-0">No recent registrations.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
