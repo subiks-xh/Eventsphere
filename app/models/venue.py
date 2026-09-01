@@ -26,7 +26,7 @@ class Venue(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
-    events = db.relationship('Event', backref='venue', foreign_keys='Event.venue_id', lazy=True, cascade='all, delete-orphan')
+    events = db.relationship('Event', backref='venue', foreign_keys='Event.venue_id', lazy=True)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

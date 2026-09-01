@@ -31,7 +31,7 @@ class Waitlist(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     position = db.Column(db.Integer, nullable=False)
     joined_at = db.Column(db.DateTime, default=datetime.utcnow)
-    status = db.Column(db.String(50), nullable=False, default=WaitlistStatus.ACTIVE)
+    status = db.Column(db.String(50), nullable=False, default=WaitlistStatus.ACTIVE, index=True)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Unique constraint: one waitlist entry per user per event

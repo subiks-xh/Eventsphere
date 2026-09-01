@@ -25,6 +25,9 @@
                         </button>
                     </form>
                 {% endif %}
+                <a href="{{ url_for('budget.dashboard', event_id=event.id) }}" class="btn btn-info text-white">
+                    <i class="bi bi-wallet2"></i> Budget
+                </a>
             {% endif %}
         {% endif %}
         <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary">

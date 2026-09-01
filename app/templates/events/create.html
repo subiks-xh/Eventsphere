@@ -95,7 +95,10 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             {{ form.capacity.label(class="form-label") }}
-                            {{ form.capacity(class="form-control") }}
+                            {{ form.capacity(class="form-control", id="capacity-input") }}
+                            <div id="forecast-box" class="alert alert-info mt-2 p-2 d-none" role="alert">
+                                <i class="bi bi-graph-up"></i> <strong>Forecast:</strong> <span id="forecast-value">--</span> expected attendees
+                            </div>
                         </div>
                     </div>
                     
@@ -121,4 +124,38 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const categorySelect = document.getElementById("category");
+    const capacityInput = document.getElementById("capacity-input");
+    const forecastBox = document.getElementById("forecast-box");
+    const forecastValue = document.getElementById("forecast-value");
+    
+    function updateForecast() {
+        const category = categorySelect.value;
+        const capacity = parseInt(capacityInput.value, 10);
+        
+        if (!category || isNaN(capacity) || capacity <= 0) {
+            forecastBox.classList.add('d-none');
+            return;
+        }
+        
+        fetch(`/api/v1/events/forecast?category=${category}&capacity=${capacity}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.forecast !== undefined) {
+                    forecastValue.textContent = data.forecast;
+                    forecastBox.classList.remove('d-none');
+                }
+            })
+            .catch(err => console.error('Error fetching forecast:', err));
+    }
+    
+    categorySelect.addEventListener('change', updateForecast);
+    capacityInput.addEventListener('input', updateForecast);
+});
+</script>
 {% endblock %}

@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block title %}Announce - {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <h2><i class="bi bi-megaphone"></i> Send Announcement</h2>
+    <a href="{{ url_for('organizer.my_events') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Events
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Message Attendees of {{ event.name }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">This message will be sent as a notification to all registered attendees.</p>
+                <form action="{{ url_for('organizer.announce', event_id=event.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea class="form-control" id="message" name="message" rows="5" required placeholder="Type your announcement here..."></textarea>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Send Announcement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

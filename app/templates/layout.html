@@ -38,6 +38,7 @@
                                 </a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="{{ url_for('organizer.dashboard') }}">Dashboard</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('budget.approvals_inbox') }}">Approval Inbox</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('organizer.my_events') }}">My Events</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('events.create') }}">Create Event</a></li>
                                     <li><hr class="dropdown-divider"></li>
@@ -77,15 +78,15 @@
                                 {% if current_user.is_attendee %}
                                     <li><a class="dropdown-item" href="{{ url_for('attendee.notifications') }}">
                                         <i class="bi bi-bell"></i> Notifications
-                                        {% if current_user.unread_notifications %}
-                                            <span class="badge bg-danger">{{ current_user.unread_notifications }}</span>
-                                        {% endif %}
+                                        <span id="nav-notification-badge" class="badge bg-danger" style="display: {{ 'inline' if current_user.unread_notifications else 'none' }};">
+                                            {{ current_user.unread_notifications }}
+                                        </span>
                                     </a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('attendee.my_tickets') }}"><i class="bi bi-ticket-perforated"></i> My Tickets</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('attendee.my_certificates') }}"><i class="bi bi-award"></i> My Certificates</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                 {% endif %}
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Profile</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}"><i class="bi bi-gear"></i> Profile</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
                             </ul>
                         </li>
@@ -126,4 +127,30 @@
             <p class="mb-0 text-muted">&copy; 2026 EventSphere. All rights reserved.</p>
         </div>
     </footer>
+    
+    {% if current_user.is_authenticated %}
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        function checkNotifications() {
+            fetch('/api/v1/notifications/unread_count')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('nav-notification-badge');
+                    if (badge) {
+                        if (data.unread_count > 0) {
+                            badge.innerText = data.unread_count;
+                            badge.style.display = 'inline';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                })
+                .catch(error => console.error('Error fetching notifications:', error));
+        }
+        
+        // Poll every 30 seconds
+        setInterval(checkNotifications, 30000);
+    });
+    </script>
+    {% endif %}
 {% endblock %}

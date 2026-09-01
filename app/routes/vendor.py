@@ -11,7 +11,7 @@ from app.models.event_vendor import EventVendor, EventVendorStatus
 from app.models.user import UserRole
 from app.models.audit_log import AuditLog
 
-vendor_bp = Blueprint('vendor', __name__, template_folder='../templates/vendor', url_prefix='/vendor')
+vendor_bp = Blueprint('vendor', __name__, url_prefix='/vendor')
 
 
 @vendor_bp.before_request
@@ -54,7 +54,7 @@ def dashboard():
         EventVendor.status == EventVendorStatus.COMPLETED
     ).all()
     
-    return render_template('dashboard.html',
+    return render_template('vendor/dashboard.html',
                           vendor=vendor,
                           assigned_events=assigned_events,
                           pending_assignments=pending_assignments,
@@ -69,7 +69,16 @@ def profile():
     vendor = Vendor.query.filter_by(user_id=current_user.id).first()
     
     from app.forms.vendor_forms import VendorForm
-    form = VendorForm(obj=vendor) if vendor else VendorForm()
+    
+    # If the user is submitting the form, ensure user_id is forced to current_user.id
+    if request.method == 'POST':
+        # Create form from POST data
+        form = VendorForm()
+        form.user_id.data = current_user.id
+        form.user_id.raw_data = [str(current_user.id)]
+    else:
+        # Create form for GET request
+        form = VendorForm(obj=vendor) if vendor else VendorForm(user_id=current_user.id)
     
     if form.validate_on_submit():
         if not vendor:
@@ -110,7 +119,7 @@ def profile():
         flash('Vendor profile updated successfully!', 'success')
         return redirect(url_for('vendor.dashboard'))
     
-    return render_template('profile.html', form=form, vendor=vendor, title='Vendor Profile')
+    return render_template('vendor/profile.html', form=form, vendor=vendor, title='Vendor Profile')
 
 
 @vendor_bp.route('/events')

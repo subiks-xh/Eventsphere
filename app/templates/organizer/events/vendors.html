@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block title %}Vendors - {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <h2><i class="bi bi-shop"></i> Event Vendors: {{ event.name }}</h2>
+    <a href="{{ url_for('organizer.my_events') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Events
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Assign Vendor</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('organizer.add_vendor', event_id=event.id) }}" method="POST">
+                    <div class="mb-3">
+                        <label for="vendor_id" class="form-label">Vendor</label>
+                        <select class="form-select" id="vendor_id" name="vendor_id" required>
+                            <option value="">-- Select Vendor --</option>
+                            {% for vendor in all_vendors %}
+                                <option value="{{ vendor.id }}">{{ vendor.business_name }} ({{ vendor.service }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="service" class="form-label">Service Type</label>
+                        <select class="form-select" id="service" name="service" required>
+                            <option value="catering">Catering</option>
+                            <option value="av">A/V Equipment</option>
+                            <option value="security">Security</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="photography">Photography</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Assign Vendor</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Assigned Vendors</h5>
+            </div>
+            <div class="card-body">
+                {% if assigned_vendors %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Business</th>
+                                    <th>Service</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assignment in assigned_vendors %}
+                                    <tr>
+                                        <td>{{ assignment.vendor.business_name }}</td>
+                                        <td>{{ assignment.service|title }}</td>
+                                        <td><span class="badge bg-{{ 'success' if assignment.status == 'confirmed' else 'warning' }}">{{ assignment.status|title }}</span></td>
+                                        <td>
+                                            <form action="{{ url_for('organizer.remove_vendor', event_id=event.id, assignment_id=assignment.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this vendor?');">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center py-4">No vendors assigned yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

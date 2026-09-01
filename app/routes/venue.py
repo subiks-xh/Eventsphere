@@ -13,7 +13,7 @@ from app.forms.venue_forms import VenueForm
 from app.models.audit_log import AuditLog
 
 # Create blueprint
-venue_bp = Blueprint('venue', __name__, template_folder='../templates/venue', url_prefix='/venues')
+venue_bp = Blueprint('venue', __name__, url_prefix='/venues')
 
 
 @venue_bp.before_request
@@ -38,7 +38,7 @@ def index():
         request=request
     )
     
-    return render_template('index.html', venues=venues, title='All Venues')
+    return render_template('venue/index.html', venues=venues, title='All Venues')
 
 
 @venue_bp.route('/create', methods=['GET', 'POST'])
@@ -51,7 +51,7 @@ def create():
         existing = Venue.query.filter_by(name=form.name.data.strip()).first()
         if existing:
             form.name.errors.append('A venue with this name already exists.')
-            return render_template('create.html', form=form, title='Create Venue')
+            return render_template('venue/create.html', form=form, title='Create Venue')
         
         venue = Venue(
             name=form.name.data.strip(),
@@ -83,7 +83,7 @@ def create():
         flash('Venue created successfully!', 'success')
         return redirect(url_for('venue.detail', venue_id=venue.id))
     
-    return render_template('create.html', form=form, title='Create Venue')
+    return render_template('venue/create.html', form=form, title='Create Venue')
 
 
 @venue_bp.route('/<int:venue_id>')
@@ -102,7 +102,7 @@ def detail(venue_id):
         request=request
     )
     
-    return render_template('detail.html', venue=venue, events=events, title=venue.name)
+    return render_template('venue/detail.html', venue=venue, events=events, title=venue.name)
 
 
 @venue_bp.route('/<int:venue_id>/edit', methods=['GET', 'POST'])
@@ -119,7 +119,7 @@ def edit(venue_id):
         ).first()
         if existing:
             form.name.errors.append('A venue with this name already exists.')
-            return render_template('edit.html', form=form, venue=venue, title=f'Edit {venue.name}')
+            return render_template('venue/edit.html', form=form, venue=venue, title=f'Edit {venue.name}')
         
         # Update venue
         venue.name = form.name.data.strip()
@@ -149,7 +149,7 @@ def edit(venue_id):
         flash('Venue updated successfully!', 'success')
         return redirect(url_for('venue.detail', venue_id=venue.id))
     
-    return render_template('edit.html', form=form, venue=venue, title=f'Edit {venue.name}')
+    return render_template('venue/edit.html', form=form, venue=venue, title=f'Edit {venue.name}')
 
 
 @venue_bp.route('/<int:venue_id>/delete', methods=['POST'])

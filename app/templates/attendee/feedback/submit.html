@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block title %}Submit Feedback - {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <h2><i class="bi bi-chat-heart"></i> Event Feedback</h2>
+            <a href="{{ url_for('attendee.dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Dashboard
+            </a>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ event.name }}</h5>
+            </div>
+            <div class="card-body p-4">
+                {% if existing_feedback %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> You have already submitted feedback for this event.
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Your Rating</label>
+                        <div class="text-warning fs-4">
+                            {% for i in range(5) %}
+                                {% if i < existing_feedback.rating %}
+                                    <i class="bi bi-star-fill"></i>
+                                {% else %}
+                                    <i class="bi bi-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Your Comments</label>
+                        <p class="bg-light p-3 rounded border">{{ existing_feedback.comments or "No comments provided." }}</p>
+                    </div>
+                {% else %}
+                    <form action="{{ url_for('attendee.submit_feedback', event_id=event.id) }}" method="POST">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-4">
+                            <label for="rating" class="form-label fw-bold">Overall Rating <span class="text-danger">*</span></label>
+                            <div class="rating-stars d-flex gap-2">
+                                {% for subfield in form.rating %}
+                                    <div class="form-check form-check-inline">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.rating.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.rating.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="comments" class="form-label fw-bold">Comments (Optional)</label>
+                            {{ form.comments(class="form-control", rows="4", placeholder="What did you like? What could be improved?") }}
+                            {% if form.comments.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.comments.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

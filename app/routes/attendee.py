@@ -2,7 +2,7 @@
 EventSphere - Attendee Routes
 """
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file, abort
+from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file, abort, current_app, Response
 from flask_login import login_required, current_user
 from datetime import datetime
 from app import db
@@ -16,8 +16,10 @@ from app.models.feedback import Feedback
 from app.models.notification import Notification
 from app.models.user import UserRole
 import os
+import csv
+import io
 
-attendee_bp = Blueprint('attendee', __name__, template_folder='../templates/attendee', url_prefix='/attendee')
+attendee_bp = Blueprint('attendee', __name__, url_prefix='/attendee')
 
 
 @attendee_bp.before_request
@@ -65,13 +67,18 @@ def dashboard():
         Registration.user_id == current_user.id
     ).order_by(Certificate.issued_at.desc()).all()
     
-    return render_template('dashboard.html',
+    # Badges calculation
+    from app.utils.badges import compute_badges
+    badges = compute_badges(current_user)
+
+    return render_template('attendee/dashboard.html',
                           registrations=registrations,
                           upcoming_events=upcoming_events,
                           past_events=past_events,
                           waitlist_entries=waitlist_entries,
                           unread_count=unread_count,
                           certificates=certificates,
+                          badges=badges,
                           title='My Dashboard')
 
 
@@ -129,7 +136,7 @@ def my_registrations():
     """View my registrations."""
     registrations = Registration.query.filter_by(user_id=current_user.id).order_by(Registration.registration_date.desc()).all()
     
-    return render_template('registrations/index.html',
+    return render_template('attendee/registrations/index.html',
                           registrations=registrations,
                           title='My Registrations')
 
@@ -141,7 +148,7 @@ def my_tickets():
         Registration.user_id == current_user.id
     ).order_by(Ticket.created_at.desc()).all()
     
-    return render_template('tickets/index.html',
+    return render_template('attendee/tickets/index.html',
                           tickets=tickets,
                           title='My Tickets')
 
@@ -157,11 +164,13 @@ def view_ticket(ticket_id):
     
     # Generate QR code if not already generated
     if not ticket.qr_code_path:
-        upload_path = current_user._get_current_object().app.config.get('UPLOAD_FOLDER', 'app/static/uploads')
-        qr_path = os.path.join(upload_path, 'qr_codes', f'qr_{ticket.id}.png')
+        upload_path = current_app.config.get('UPLOAD_FOLDER', 'app/static/uploads')
+        qr_dir = os.path.join(upload_path, 'qr_codes')
+        os.makedirs(qr_dir, exist_ok=True)
+        qr_path = os.path.join(qr_dir, f'qr_{ticket.id}.png')
         ticket.generate_qr_code(qr_path)
     
-    return render_template('tickets/view.html',
+    return render_template('attendee/tickets/view.html',
                           ticket=ticket,
                           title=f'Ticket {ticket.ticket_id}')
 
@@ -247,7 +256,7 @@ def notifications():
     for n in unread:
         n.mark_as_read()
     
-    return render_template('notifications/index.html',
+    return render_template('attendee/notifications/index.html',
                           notifications=notifications,
                           title='My Notifications')
 
@@ -271,7 +280,7 @@ def my_certificates():
         Registration.user_id == current_user.id
     ).order_by(Certificate.issued_at.desc()).all()
     
-    return render_template('certificates/index.html',
+    return render_template('attendee/certificates/index.html',
                           certificates=certificates,
                           title='My Certificates')
 
@@ -287,8 +296,10 @@ def download_certificate(certificate_id):
     
     # Generate PDF if not already generated
     if not certificate.file_path:
-        upload_path = current_user._get_current_object().app.config.get('UPLOAD_FOLDER', 'app/static/uploads')
-        cert_path = os.path.join(upload_path, 'certificates', f'certificate_{certificate.id}.pdf')
+        upload_path = current_app.config.get('UPLOAD_FOLDER', 'app/static/uploads')
+        cert_dir = os.path.join(upload_path, 'certificates')
+        os.makedirs(cert_dir, exist_ok=True)
+        cert_path = os.path.join(cert_dir, f'certificate_{certificate.id}.pdf')
         certificate.generate_pdf(cert_path)
     
     # Return the file
@@ -346,7 +357,7 @@ def submit_feedback(event_id):
         flash('Thank you for your feedback!', 'success')
         return redirect(url_for('attendee.dashboard'))
     
-    return render_template('feedback/submit.html',
+    return render_template('attendee/feedback/submit.html',
                           event=event,
                           form=form,
                           title=f'Feedback for {event.name}')

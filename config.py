@@ -10,7 +10,7 @@ load_dotenv()
 
 class Config:
     """Base configuration."""
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
+    SECRET_KEY = os.environ.get('SECRET_KEY')
     DEBUG = os.environ.get('FLASK_DEBUG', '0') == '1'
     TESTING = False
     ENV = os.environ.get('FLASK_ENV', 'development')
@@ -48,12 +48,14 @@ class Config:
 
 class DevelopmentConfig(Config):
     """Development configuration."""
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     DEBUG = True
     SESSION_COOKIE_SECURE = False
     SQLALCHEMY_ECHO = False
 
 class TestingConfig(Config):
     """Testing configuration."""
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'test-secret-key'
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False

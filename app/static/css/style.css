@@ -1,16 +1,31 @@
 /* EventSphere - Custom Styles */
 
+:root {
+    --primary-color: #4361ee;
+    --primary-hover: #3a0ca3;
+    --secondary-color: #7209b7;
+    --success-color: #06d6a0;
+    --warning-color: #f72585;
+    --bg-light: #f8f9fa;
+    --text-main: #2b2d42;
+    --text-muted: #8d99ae;
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --hover-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
 /* Body styling */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f8f9fa;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f7f6;
     min-height: 100vh;
+    color: var(--text-main);
 }
 
 /* Navbar styling */
 .navbar {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 0.5rem 0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    padding: 0.75rem 0;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
 }
 
 .navbar-brand {
@@ -30,19 +45,27 @@ body {
 /* Card styling */
 .card {
     border: none;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    box-shadow: var(--card-shadow);
     margin-bottom: 1.5rem;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--hover-shadow);
 }
 
 .card-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-    border-radius: 0.5rem 0.5rem 0 0 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+    background-color: #ffffff;
 }
 
 .card-footer {
-    border-top: 1px solid rgba(0, 0, 0, 0.125);
-    border-radius: 0 0 0.5rem 0.5rem !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 0 0 0.75rem 0.75rem !important;
+    background-color: #ffffff;
 }
 
 /* Table styling */

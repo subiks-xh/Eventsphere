@@ -10,7 +10,7 @@ from app.models.user import User, UserRole
 from app.forms.auth_forms import LoginForm, RegistrationForm
 from app.models.audit_log import AuditLog
 
-auth_bp = Blueprint('auth', __name__, template_folder='../templates/auth')
+auth_bp = Blueprint('auth', __name__)
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
@@ -23,6 +23,12 @@ def login():
     
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
+        
+        print(f"Login attempt for username: {form.username.data}")
+        print(f"User found: {user is not None}")
+        if user:
+            print(f"Password check: {user.check_password(form.password.data)}")
+            print(f"Is active: {user.is_active}")
         
         if user and user.check_password(form.password.data) and user.is_active:
             login_user(user, remember=form.remember_me.data)
@@ -55,7 +61,7 @@ def login():
         else:
             flash('Invalid username, password, or account is disabled.', 'error')
     
-    return render_template('login.html', form=form, title='Login')
+    return render_template('auth/login.html', form=form, title='Login')
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -94,7 +100,7 @@ def register():
         flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('auth.login'))
     
-    return render_template('register.html', form=form, title='Register')
+    return render_template('auth/register.html', form=form, title='Register')
 
 
 @auth_bp.route('/logout')
@@ -114,3 +120,13 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('main.index'))
+
+
+@auth_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    """Generic user profile route."""
+    if current_user.is_vendor:
+        return redirect(url_for('vendor.profile'))
+        
+    return render_template('auth/profile.html', title='My Profile')

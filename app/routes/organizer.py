@@ -2,7 +2,7 @@
 EventSphere - Organizer Routes
 """
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, Response, current_app
 from flask_login import login_required, current_user
 from datetime import datetime, date
 from app import db
@@ -10,6 +10,7 @@ from app.models.event import Event, EventStatus
 from app.models.venue import Venue
 from app.models.registration import Registration
 from app.models.waitlist import Waitlist
+from app.models.ticket import Ticket
 from app.models.vendor import Vendor
 from app.models.resource import Resource
 from app.models.event_vendor import EventVendor
@@ -20,8 +21,11 @@ from app.models.feedback import Feedback
 from app.models.notification import Notification, NotificationType
 from app.models.audit_log import AuditLog
 from app.models.user import UserRole
+import os
+import csv
+import io
 
-organizer_bp = Blueprint('organizer', __name__, template_folder='../templates/organizer', url_prefix='/organizer')
+organizer_bp = Blueprint('organizer', __name__, url_prefix='/organizer')
 
 
 @organizer_bp.before_request
@@ -40,14 +44,11 @@ def dashboard():
     # My events
     my_events = Event.query.filter_by(organizer_id=current_user.id).order_by(Event.date.desc()).limit(5).all()
     
-    # Statistics
-    total_events = Event.query.filter_by(organizer_id=current_user.id).count()
-    total_registrations = Registration.query.join(Event).filter(
-        Event.organizer_id == current_user.id
-    ).count()
-    total_attendance = Attendance.query.join(Registration).join(Event).filter(
-        Event.organizer_id == current_user.id
-    ).count()
+    # Initialize analytics
+    from app.utils.analytics import EventAnalytics
+    kpis = EventAnalytics.get_organizer_kpis(current_user.id)
+    trends = EventAnalytics.get_attendance_trends(current_user.id)
+    budget_dist = EventAnalytics.get_budget_distribution(current_user.id)
     
     # Upcoming events
     upcoming_events = Event.query.filter(
@@ -59,21 +60,24 @@ def dashboard():
     # Events with high waitlist
     high_waitlist_events = Event.query.filter(
         Event.organizer_id == current_user.id
-    ).order_by(Event.waitlist_count.desc()).limit(3).all()
+    ).join(Waitlist).filter(Waitlist.status == 'active').group_by(Event.id).having(db.func.count(Waitlist.id) > 5).all()
     
     # Recent registrations
     recent_registrations = Registration.query.join(Event).filter(
         Event.organizer_id == current_user.id
-    ).order_by(Registration.registration_date.desc()).limit(5).all()
-    
-    return render_template('dashboard.html',
+    ).order_by(Registration.registration_date.desc()).limit(10).all()
+        
+    return render_template('organizer/dashboard.html',
                           my_events=my_events,
-                          total_events=total_events,
-                          total_registrations=total_registrations,
-                          total_attendance=total_attendance,
+                          kpis=kpis,
                           upcoming_events=upcoming_events,
                           high_waitlist_events=high_waitlist_events,
                           recent_registrations=recent_registrations,
+                          chart_labels=trends['labels'],
+                          chart_attendance=trends['attendance'],
+                          chart_registrations=trends['registrations'],
+                          budget_dist_labels=budget_dist['labels'],
+                          budget_dist_data=budget_dist['data'],
                           title='Organizer Dashboard')
 
 
@@ -97,7 +101,7 @@ def event_registrations(event_id):
     registrations = Registration.query.filter_by(event_id=event_id).order_by(Registration.registration_date.desc()).all()
     waitlist = Waitlist.query.filter_by(event_id=event_id).order_by(Waitlist.position).all()
     
-    return render_template('events/registrations.html', 
+    return render_template('organizer/events/registrations.html', 
                           event=event,
                           registrations=registrations,
                           waitlist=waitlist,
@@ -154,6 +158,30 @@ def checkin(event_id):
             data={'event_id': event.id, 'attendance_id': attendance.id}
         )
         db.session.add(notification)
+        
+        # Auto-generate certificate
+        existing_cert = Certificate.query.filter_by(registration_id=ticket.registration.id).first()
+        if not existing_cert:
+            cert = Certificate(ticket.registration)
+            db.session.add(cert)
+            db.session.commit()
+            
+            # Generate PDF
+            upload_path = current_app.config.get('UPLOAD_FOLDER', 'app/static/uploads')
+            cert_dir = os.path.join(upload_path, 'certificates')
+            os.makedirs(cert_dir, exist_ok=True)
+            cert_path = os.path.join(cert_dir, f'certificate_{cert.id}.pdf')
+            cert.generate_pdf(cert_path)
+            
+            # Certificate notification
+            cert_notif = Notification(
+                user_id=ticket.registration.user_id,
+                message=f'Your certificate for "{event.name}" is now available!',
+                type=NotificationType.CERTIFICATE_AVAILABLE,
+                data={'event_id': event.id, 'certificate_id': cert.id}
+            )
+            db.session.add(cert_notif)
+            
         db.session.commit()
         
         # Log action
@@ -174,7 +202,7 @@ def checkin(event_id):
         Registration.event_id == event_id
     ).order_by(Attendance.check_in_time.desc()).all()
     
-    return render_template('events/checkin.html', 
+    return render_template('organizer/events/checkin.html', 
                           event=event,
                           checked_in=checked_in,
                           title=f'Check-in for {event.name}')
@@ -201,7 +229,7 @@ def event_certificates(event_id):
         Registration.event_id == event_id
     ).all()
     
-    return render_template('events/certificates.html',
+    return render_template('organizer/events/certificates.html',
                           event=event,
                           eligible_registrations=eligible_registrations,
                           certificates=certificates,
@@ -237,8 +265,10 @@ def generate_certificates(event_id):
         db.session.commit()
         
         # Generate PDF
-        upload_path = current_user._get_current_object().app.config.get('UPLOAD_FOLDER', 'app/static/uploads')
-        cert_path = os.path.join(upload_path, 'certificates', f'certificate_{cert.id}.pdf')
+        upload_path = current_app.config.get('UPLOAD_FOLDER', 'app/static/uploads')
+        cert_dir = os.path.join(upload_path, 'certificates')
+        os.makedirs(cert_dir, exist_ok=True)
+        cert_path = os.path.join(cert_dir, f'certificate_{cert.id}.pdf')
         cert.generate_pdf(cert_path)
         
         # Create notification
@@ -283,7 +313,7 @@ def event_vendors(event_id):
     # Get assigned vendors
     assigned_vendors = EventVendor.query.filter_by(event_id=event_id).all()
     
-    return render_template('events/vendors.html',
+    return render_template('organizer/events/vendors.html',
                           event=event,
                           all_vendors=all_vendors,
                           assigned_vendors=assigned_vendors,
@@ -385,7 +415,7 @@ def event_resources(event_id):
     # Get assigned resources
     assigned_resources = EventResource.query.filter_by(event_id=event_id).all()
     
-    return render_template('events/resources.html',
+    return render_template('organizer/events/resources.html',
                           event=event,
                           all_resources=all_resources,
                           assigned_resources=assigned_resources,
@@ -503,4 +533,71 @@ def announce(event_id):
         flash(f'Announcement sent to {len(registrations)} attendees!', 'success')
         return redirect(url_for('organizer.announce', event_id=event.id))
     
-    return render_template('events/announce.html', event=event, title=f'Announce to {event.name}')
+    return render_template('organizer/events/announce.html', event=event, title=f'Announce to {event.name}')
+
+
+@organizer_bp.route('/events/<int:event_id>/export/attendees.csv')
+def export_attendees_csv(event_id):
+    """Export attendee list as CSV."""
+    event = Event.query.get_or_404(event_id)
+
+    if current_user.id != event.organizer_id and not current_user.is_admin:
+        abort(403)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Registration ID', 'Attendee Name', 'Email', 'Status', 'Ticket ID', 'Checked In', 'Registration Date'])
+
+    registrations = Registration.query.filter_by(event_id=event_id).all()
+    for reg in registrations:
+        writer.writerow([
+            reg.id,
+            reg.user.full_name,
+            reg.user.email,
+            reg.status,
+            reg.ticket.ticket_id if reg.ticket else '',
+            'Yes' if reg.has_checked_in else 'No',
+            reg.registration_date.strftime('%Y-%m-%d %H:%M')
+        ])
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=attendees_{event_id}.csv'}
+    )
+
+
+@organizer_bp.route('/events/<int:event_id>/export/attendance.csv')
+def export_attendance_csv(event_id):
+    """Export attendance list as CSV."""
+    event = Event.query.get_or_404(event_id)
+
+    if current_user.id != event.organizer_id and not current_user.is_admin:
+        abort(403)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Attendee Name', 'Email', 'Check-In Time', 'Check-In Method', 'Ticket ID'])
+
+    attendances = Attendance.query.join(Registration).filter(
+        Registration.event_id == event_id
+    ).all()
+
+    for att in attendances:
+        writer.writerow([
+            att.registration.user.full_name,
+            att.registration.user.email,
+            att.check_in_time.strftime('%Y-%m-%d %H:%M') if att.check_in_time else '',
+            att.check_in_method or 'manual',
+            att.registration.ticket.ticket_id if att.registration.ticket else ''
+        ])
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={'Content-Disposition': f'attachment; filename=attendance_{event_id}.csv'}
+    )
+
+

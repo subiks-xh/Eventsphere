@@ -18,6 +18,9 @@ from app.models.feedback import Feedback
 from app.models.notification import Notification, NotificationType
 from app.models.audit_log import AuditLog
 
+from app.models.budget import Budget, Expense, Sponsorship, ExpenseCategory, ExpenseStatus
+from app.models.approval import ApprovalRequest, ApprovalStatus
+
 __all__ = [
     'User', 'UserRole', 'UserStatus',
     'Venue',
@@ -33,5 +36,7 @@ __all__ = [
     'Certificate',
     'Feedback',
     'Notification', 'NotificationType',
-    'AuditLog'
+    'AuditLog',
+    'Budget', 'Expense', 'Sponsorship', 'ExpenseCategory', 'ExpenseStatus',
+    'ApprovalRequest', 'ApprovalStatus'
 ]

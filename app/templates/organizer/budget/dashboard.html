@@ -1,0 +1,179 @@
+{% extends "layout.html" %}
+
+{% block title %}Budget - {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left"></i> Back to Event
+        </a>
+        <h1><i class="bi bi-wallet2"></i> Budget Dashboard</h1>
+        <h5 class="text-muted">{{ event.name }}</h5>
+    </div>
+    <div>
+        <a href="{{ url_for('budget.export_budget', event_id=event.id) }}" class="btn btn-success">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Budget Overview & Update -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Budget Overview</h5>
+            </div>
+            <div class="card-body text-center">
+                <h2 class="display-6 text-primary">₹{{ "%.2f"|format(budget.total_amount) }}</h2>
+                <p class="text-muted mb-4">Total Allocated Budget</p>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <h5 class="text-success">₹{{ "%.2f"|format(total_sponsorship) }}</h5>
+                        <small class="text-muted">Sponsorships</small>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-danger">₹{{ "%.2f"|format(budget.approved_expenses_total) }}</h5>
+                        <small class="text-muted">Approved Expenses</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <form method="POST" action="{{ url_for('budget.dashboard', event_id=event.id) }}">
+                    {{ budget_form.csrf_token }}
+                    <div class="mb-3">
+                        {{ budget_form.total_amount.label(class="form-label") }}
+                        {{ budget_form.total_amount(class="form-control", step="0.01") }}
+                    </div>
+                    <button type="submit" name="update_budget" class="btn btn-primary w-100">
+                        <i class="bi bi-save"></i> Update Budget
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Utilization & Quick Actions -->
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Budget Utilization</h5>
+                <div class="progress mt-3 mb-2" style="height: 25px;">
+                    <div class="progress-bar {% if budget.utilization_percentage > 90 %}bg-danger{% elif budget.utilization_percentage > 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ budget.utilization_percentage }}%;" 
+                         aria-valuenow="{{ budget.utilization_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ "%.1f"|format(budget.utilization_percentage) }}%
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between text-muted small">
+                    <span>₹0</span>
+                    <span>Remaining: ₹{{ "%.2f"|format(budget.remaining_budget) }}</span>
+                    <span>₹{{ "%.2f"|format(budget.total_amount) }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Add Expense</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('budget.add_expense', event_id=event.id) }}">
+                            {{ expense_form.csrf_token }}
+                            <div class="mb-2">
+                                {{ expense_form.category(class="form-select") }}
+                            </div>
+                            <div class="mb-2">
+                                {{ expense_form.amount(class="form-control", placeholder="Amount (₹)", step="0.01") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ expense_form.description(class="form-control", placeholder="Description") }}
+                            </div>
+                            <button type="submit" class="btn btn-outline-danger w-100"><i class="bi bi-dash-circle"></i> Request Expense</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Add Sponsorship</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('budget.add_sponsorship', event_id=event.id) }}">
+                            {{ sponsorship_form.csrf_token }}
+                            <div class="mb-2">
+                                {{ sponsorship_form.sponsor_name(class="form-control", placeholder="Sponsor Name") }}
+                            </div>
+                            <div class="mb-2">
+                                {{ sponsorship_form.amount(class="form-control", placeholder="Amount (₹)", step="0.01") }}
+                            </div>
+                            <div class="mb-3">
+                                {{ sponsorship_form.contact_email(class="form-control", placeholder="Contact Email (Optional)") }}
+                            </div>
+                            <button type="submit" class="btn btn-outline-success w-100"><i class="bi bi-plus-circle"></i> Add Sponsorship</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Expenses Table -->
+    <div class="col-md-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Expense Ledger</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Requested By</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exp in expenses %}
+                            <tr>
+                                <td>{{ exp.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td><span class="badge bg-secondary">{{ exp.category|title }}</span></td>
+                                <td>{{ exp.description }}</td>
+                                <td>{{ exp.requester.username }}</td>
+                                <td>₹{{ "%.2f"|format(exp.amount) }}</td>
+                                <td>
+                                    {% if exp.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif exp.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-3 text-muted">No expenses recorded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

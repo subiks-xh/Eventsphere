@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+
+{% block title %}Approval Inbox - EventSphere{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-inbox"></i> Approval Inbox</h1>
+        <h5 class="text-muted">Review pending requests</h5>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Event</th>
+                                <th>Type</th>
+                                <th>Requested By</th>
+                                <th>Details</th>
+                                <th>Amount</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in pending_requests %}
+                            <tr>
+                                <td>{{ req.requested_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td><a href="{{ url_for('events.detail', event_id=req.expense.budget.event.id) }}">{{ req.expense.budget.event.name }}</a></td>
+                                <td><span class="badge bg-secondary">Expense ({{ req.expense.category|title }})</span></td>
+                                <td>{{ req.expense.requester.username }}</td>
+                                <td>{{ req.expense.description }}</td>
+                                <td class="text-danger fw-bold">₹{{ "%.2f"|format(req.expense.amount) }}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#processModal{{ req.id }}">
+                                        Review
+                                    </button>
+                                </td>
+                            </tr>
+                            
+                            <!-- Process Modal -->
+                            <div class="modal fade" id="processModal{{ req.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="POST" action="{{ url_for('budget.process_approval', request_id=req.id) }}">
+                                            {{ form.csrf_token }}
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Process Approval Request</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-start">
+                                                <p><strong>Event:</strong> {{ req.expense.budget.event.name }}</p>
+                                                <p><strong>Requester:</strong> {{ req.expense.requester.username }}</p>
+                                                <p><strong>Description:</strong> {{ req.expense.description }}</p>
+                                                <h4 class="text-danger mb-4">Amount: ₹{{ "%.2f"|format(req.expense.amount) }}</h4>
+                                                
+                                                <div class="mb-3">
+                                                    {{ form.action.label(class="form-label") }}
+                                                    {{ form.action(class="form-select") }}
+                                                </div>
+                                                <div class="mb-3">
+                                                    {{ form.notes.label(class="form-label") }}
+                                                    {{ form.notes(class="form-control", rows="3") }}
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                {{ form.submit(class="btn btn-primary") }}
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-check2-circle fs-1 text-success d-block mb-2"></i>
+                                    No pending approvals in your inbox.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

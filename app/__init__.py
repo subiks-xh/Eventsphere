@@ -44,6 +44,10 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     csrf.init_app(app)
     
+    # Initialize APScheduler
+    from app.scheduler import init_scheduler
+    init_scheduler(app)
+    
     # Configure login manager
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Please log in to access this page.'
@@ -58,8 +62,9 @@ def create_app(config_class=Config):
     from app.routes.vendor import vendor_bp
     from app.routes.venue import venue_bp
     from app.routes.events import events_bp
-    from app.routes.api import api_bp
+    from app.routes.api import api_v1_bp
     from app.routes.errors import errors_bp
+    from app.routes.budget import budget_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -69,7 +74,8 @@ def create_app(config_class=Config):
     app.register_blueprint(vendor_bp, url_prefix='/vendor')
     app.register_blueprint(venue_bp, url_prefix='/venues')
     app.register_blueprint(events_bp, url_prefix='/events')
-    app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(api_v1_bp, url_prefix='/api/v1')
+    app.register_blueprint(budget_bp)
     app.register_blueprint(errors_bp)
     
     # Create upload directories

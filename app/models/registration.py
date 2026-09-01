@@ -29,10 +29,11 @@ class Registration(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     event_id = db.Column(db.Integer, db.ForeignKey('events.id'), nullable=False)
-    status = db.Column(db.String(50), nullable=False, default=RegistrationStatus.PENDING)
+    status = db.Column(db.String(50), nullable=False, default=RegistrationStatus.PENDING, index=True)
     registration_date = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     special_requirements = db.Column(db.Text)
+    reminder_sent = db.Column(db.Boolean, default=False, server_default='0', nullable=False)
 
     # Relationships
     ticket = db.relationship('Ticket', backref='registration', uselist=False, foreign_keys='Ticket.registration_id', cascade='all, delete-orphan')

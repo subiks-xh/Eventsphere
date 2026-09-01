@@ -36,6 +36,7 @@ class EventVendor(db.Model):
     status = db.Column(db.String(50), nullable=False, default=EventVendorStatus.PENDING)
     assigned_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    reminder_sent = db.Column(db.Boolean, default=False, server_default='0', nullable=False)
 
     # Unique constraint: one vendor-service combination per event
     __table_args__ = (

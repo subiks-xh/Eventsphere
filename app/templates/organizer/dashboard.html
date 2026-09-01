@@ -10,38 +10,40 @@
 <!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
+        <div class="card text-center h-100 border-primary">
             <div class="card-body">
                 <i class="bi bi-calendar-event text-primary" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_events }}</h3>
+                <h3 class="mt-2">{{ kpis.total_events }}</h3>
                 <p class="text-muted mb-0">Total Events</p>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
+        <div class="card text-center h-100 border-success">
             <div class="card-body">
                 <i class="bi bi-ticket-perforated text-success" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_registrations }}</h3>
+                <h3 class="mt-2">{{ kpis.total_registrations }}</h3>
                 <p class="text-muted mb-0">Total Registrations</p>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
+        <div class="card text-center h-100 border-info">
             <div class="card-body">
                 <i class="bi bi-person-check text-info" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_attendance }}</h3>
+                <h3 class="mt-2">{{ kpis.total_attendance }}</h3>
                 <p class="text-muted mb-0">Total Check-ins</p>
+                <small class="text-muted">{{ "%.1f"|format(kpis.attendance_rate) }}% Rate</small>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
+        <div class="card text-center h-100 border-warning">
             <div class="card-body">
-                <i class="bi bi-calendar text-warning" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ upcoming_events|length }}</h3>
-                <p class="text-muted mb-0">Upcoming Events</p>
+                <i class="bi bi-wallet2 text-warning" style="font-size: 2.5rem;"></i>
+                <h3 class="mt-2">{{ "%.1f"|format(kpis.utilization_rate) }}%</h3>
+                <p class="text-muted mb-0">Budget Utilization</p>
+                <small class="text-muted">₹{{ kpis.total_expenses }} / ₹{{ kpis.total_budget }}</small>
             </div>
         </div>
     </div>
@@ -236,4 +238,107 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Event Analytics Graph -->
+<div class="row mb-4 mt-4">
+    <div class="col-md-8">
+        <div class="card border-primary h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Event Attendance Analytics</h5>
+            </div>
+            <div class="card-body">
+                {% if chart_labels %}
+                <canvas id="attendanceChart" height="250"></canvas>
+                {% else %}
+                <p class="text-muted text-center py-4">No completed events to show analytics.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-warning h-100">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Budget Distribution</h5>
+            </div>
+            <div class="card-body">
+                {% if budget_dist_labels %}
+                <canvas id="budgetChart" height="250"></canvas>
+                {% else %}
+                <p class="text-muted text-center py-4">No approved expenses yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if chart_labels or budget_dist_labels %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    {% if chart_labels %}
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|tojson }},
+            datasets: [
+                {
+                    label: 'Registrations',
+                    data: {{ chart_registrations|tojson }},
+                    backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Actual Attendance',
+                    data: {{ chart_attendance|tojson }},
+                    backgroundColor: 'rgba(25, 135, 84, 0.5)',
+                    borderColor: 'rgba(25, 135, 84, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    {% if budget_dist_labels %}
+    const budgetCtx = document.getElementById('budgetChart').getContext('2d');
+    new Chart(budgetCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ budget_dist_labels|tojson }},
+            datasets: [{
+                data: {{ budget_dist_data|tojson }},
+                backgroundColor: [
+                    'rgba(25, 135, 84, 0.7)',
+                    'rgba(13, 110, 253, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(220, 53, 69, 0.7)',
+                    'rgba(13, 202, 240, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endif %}
 {% endblock %}

@@ -17,7 +17,7 @@ from app.models.notification import Notification, NotificationType
 from app.forms.event_forms import EventForm
 from app.models.audit_log import AuditLog
 
-events_bp = Blueprint('events', __name__, template_folder='../templates/events', url_prefix='/events')
+events_bp = Blueprint('events', __name__, url_prefix='/events')
 
 
 @events_bp.before_request
@@ -31,38 +31,40 @@ def check_organizer_or_admin():
         abort(403)
 
 
+from sqlalchemy.orm import joinedload
+
 @events_bp.route('/')
 def index():
     """List all events (public)."""
     # Public view - show published/registration_open events
-    events = Event.query.filter(
+    events = Event.query.options(joinedload(Event.venue)).filter(
         Event.status.in_([EventStatus.PUBLISHED, EventStatus.REGISTRATION_OPEN])
     ).order_by(Event.date, Event.start_time).all()
     
-    return render_template('index.html', events=events, title='All Events')
+    return render_template('events/index.html', events=events, title='All Events')
 
 
 @events_bp.route('/upcoming')
 def upcoming():
     """List upcoming events."""
     today = date.today()
-    events = Event.query.filter(
+    events = Event.query.options(joinedload(Event.venue)).filter(
         Event.status.in_([EventStatus.PUBLISHED, EventStatus.REGISTRATION_OPEN]),
         Event.date >= today
     ).order_by(Event.date, Event.start_time).all()
     
-    return render_template('upcoming.html', events=events, title='Upcoming Events')
+    return render_template('events/upcoming.html', events=events, title='Upcoming Events')
 
 
 @events_bp.route('/past')
 def past():
     """List past events."""
     today = date.today()
-    events = Event.query.filter(
+    events = Event.query.options(joinedload(Event.venue)).filter(
         Event.date < today
     ).order_by(Event.date.desc(), Event.start_time.desc()).all()
     
-    return render_template('past.html', events=events, title='Past Events')
+    return render_template('events/past.html', events=events, title='Past Events')
 
 
 @events_bp.route('/<int:event_id>')
@@ -95,7 +97,7 @@ def detail(event_id):
     # Get venue conflict info
     has_conflict, conflicting_events = event.has_venue_conflict()
     
-    return render_template('detail.html', 
+    return render_template('events/detail.html', 
                           event=event, 
                           is_registered=is_registered,
                           is_on_waitlist=is_on_waitlist,
@@ -134,7 +136,7 @@ def create():
                 form.venue_id.errors.append(
                     f'Venue conflict! This venue already has events: {", ".join(conflict_names)}'
                 )
-                return render_template('create.html', form=form, title='Create Event')
+                return render_template('events/create.html', form=form, title='Create Event')
         
         # Create the event
         event = Event(
@@ -168,7 +170,7 @@ def create():
         flash('Event created successfully!', 'success')
         return redirect(url_for('events.detail', event_id=event.id))
     
-    return render_template('create.html', form=form, title='Create Event')
+    return render_template('events/create.html', form=form, title='Create Event')
 
 
 @events_bp.route('/<int:event_id>/edit', methods=['GET', 'POST'])
@@ -210,7 +212,7 @@ def edit(event_id):
                         form.venue_id.errors.append(
                             f'Venue conflict! This venue already has events: {", ".join(conflict_names)}'
                         )
-                        return render_template('edit.html', form=form, event=event, title=f'Edit {event.name}')
+                        return render_template('events/edit.html', form=form, event=event, title=f'Edit {event.name}')
         
         # Update the event
         event.name = form.name.data.strip()
@@ -253,7 +255,7 @@ def edit(event_id):
         flash('Event updated successfully!', 'success')
         return redirect(url_for('events.detail', event_id=event.id))
     
-    return render_template('edit.html', form=form, event=event, title=f'Edit {event.name}')
+    return render_template('events/edit.html', form=form, event=event, title=f'Edit {event.name}')
 
 
 @events_bp.route('/<int:event_id>/delete', methods=['POST'])

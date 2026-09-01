@@ -38,6 +38,26 @@
     </div>
 </div>
 
+<!-- Gamification Badges -->
+{% if badges %}
+<div class="card mb-4 border-info">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="bi bi-award-fill"></i> My Achievements</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap gap-3">
+            {% for badge in badges %}
+            <div class="text-center" style="width: 100px;" title="{{ badge.description }}">
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 60px; height: 60px; font-size: 1.5rem; color: {{ badge.color }}; border: 2px solid {{ badge.color }};">
+                    <i class="{{ badge.icon }}"></i>
+                </div>
+                <small class="fw-bold text-muted d-block lh-sm">{{ badge.name }}</small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
 <!-- Quick Links -->
 <div class="card mb-4">
     <div class="card-header bg-light">
