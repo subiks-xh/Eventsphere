@@ -62,11 +62,13 @@ def seed():
     print(f"👥 Creating 500 attendees...")
     attendees = []
     for i in range(1, 501):
+        username = 'attendee1' if i == 1 else f'attendee{i}_{fake.user_name()}'[:80]
         att = User(
-            username=f'attendee{i}_{fake.user_name()}'[:80],
-            email=f'attendee{i}_{fake.email()}'[:120],
+            username=username,
+            email=f'attendee{i}@eventsphere.com' if i == 1 else f'attendee{i}_{fake.email()}'[:120],
             password='attendee123',
-            first_name=fake.first_name(), last_name=fake.last_name(),
+            first_name='Test' if i == 1 else fake.first_name(),
+            last_name='Attendee' if i == 1 else fake.last_name(),
             phone=fake.phone_number()[:20], role=UserRole.ATTENDEE
         )
         attendees.append(att)
@@ -78,11 +80,13 @@ def seed():
     services = [VendorService.CATERING, VendorService.DECORATION, VendorService.PHOTOGRAPHY, VendorService.SECURITY, VendorService.AUDIO_VISUAL, VendorService.OTHER]
     
     for i in range(1, 21):
+        username = 'vendor1' if i == 1 else f'vendor{i}_{fake.user_name()}'[:80]
         v_user = User(
-            username=f'vendor{i}_{fake.user_name()}'[:80],
-            email=f'vendor{i}_{fake.email()}'[:120],
+            username=username,
+            email=f'vendor{i}@eventsphere.com' if i == 1 else f'vendor{i}_{fake.email()}'[:120],
             password='vendor123',
-            first_name=fake.first_name(), last_name=fake.last_name(),
+            first_name='Test' if i == 1 else fake.first_name(),
+            last_name='Vendor' if i == 1 else fake.last_name(),
             phone=fake.phone_number()[:20], role=UserRole.VENDOR
         )
         vendor_users.append(v_user)

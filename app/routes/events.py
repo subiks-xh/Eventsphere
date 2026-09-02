@@ -129,9 +129,10 @@ def create():
                 venue_id=form.venue_id.data
             )
             
-            has_conflict, conflicting_events = venue.has_conflict(temp_event)
+            has_conflict = venue.has_conflict(temp_event)
             
             if has_conflict:
+                conflicting_events = venue.get_conflicting_events(temp_event)
                 conflict_names = [e.name for e in conflicting_events]
                 form.venue_id.errors.append(
                     f'Venue conflict! This venue already has events: {", ".join(conflict_names)}'
@@ -204,9 +205,10 @@ def edit(event_id):
                     venue_id=form.venue_id.data
                 )
                 
-                has_conflict, conflicting_events = venue.has_conflict(temp_event)
+                has_conflict = venue.has_conflict(temp_event)
                 
                 if has_conflict:
+                    conflicting_events = venue.get_conflicting_events(temp_event)
                     conflict_names = [e.name for e in conflicting_events if e.id != event.id]
                     if conflict_names:
                         form.venue_id.errors.append(
