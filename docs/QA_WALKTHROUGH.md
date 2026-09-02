@@ -14,6 +14,11 @@ This document tracks the end-to-end interactive QA session for EventSphere acros
 |--------|--------------|--------|-------------|
 | `UndefinedError: kpis is undefined` | Section 0 / Navbar | **FIXED** | `main.py` was directly rendering dashboard templates without passing data. Changed to `redirect(url_for('role.dashboard'))` to route through proper controller logic. |
 | `TypeError: cannot unpack non-iterable bool object` | Section 2 / Step 1 (Create Event) | **FIXED** | `venue.has_conflict()` returns a boolean, but `events.py` tried to unpack it as a tuple. Refactored `events.py` to use `get_conflicting_events()` separately if a conflict is found. |
+| `400 Bad Request on Publish` | Section 2 / Step 3 (Publish) | **FIXED** | The Publish, Cancel, and Register buttons on the Event Details page used `POST` forms but lacked a `csrf_token()`. Added hidden CSRF inputs to all 5 forms in `detail.html`. |
+| `403 Forbidden on Register` | Phase 2 / Register | **FIXED** | The `before_request` hook in `events.py` blocked all POST requests for non-Organizers/Admins, completely preventing Attendees from registering. Whitelisted `events.register` and `events.cancel_registration` in the hook. |
+| `Missing Vendor/Resource UI` | Phase 3 / Organizer View | **FIXED** | The Organizer UI on the Event Details page lacked buttons to navigate to Vendor and Resource management. Added `Manage Vendors` and `Manage Resources` buttons to the Registration Info sidebar in `detail.html`. |
+| `400 Bad Request on Assign` | Phase 3 / Vendor Assign | **FIXED** | Similar to the Publish button, the form in `vendors.html` for assigning a vendor lacked a `csrf_token()`. I added the tokens to the assignment and removal forms. Also proactively added the `update_status` form to the Vendor Dashboard so the vendor can accept the assignment. |
+| `NameError: EventVendor is not defined` | Phase 3 / Vendor Login | **FIXED** | When logging in as the Vendor, the Vendor Dashboard raised an exception because `app/models/vendor.py` referenced `EventVendor` in the `assigned_events` property without importing it. Imported the missing model. |
 
 ---
 

@@ -137,7 +137,15 @@
                                 <td>
                                     {% for assignment in vendor.event_assignments %}
                                         {% if assignment.event_id == event.id %}
-                                            <span class="badge bg-{{ assignment.status }}">{{ assignment.status|title }}</span>
+                                            <form action="{{ url_for('vendor.update_status', assignment_id=assignment.id) }}" method="POST" class="d-flex align-items-center">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                                <select name="status" class="form-select form-select-sm me-2" onchange="this.form.submit()">
+                                                    <option value="pending" {% if assignment.status == 'pending' %}selected{% endif %}>Pending</option>
+                                                    <option value="confirmed" {% if assignment.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                                    <option value="completed" {% if assignment.status == 'completed' %}selected{% endif %}>Completed</option>
+                                                    <option value="cancelled" {% if assignment.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                                </select>
+                                            </form>
                                         {% endif %}
                                     {% endfor %}
                                 </td>

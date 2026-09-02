@@ -27,6 +27,11 @@ def check_organizer_or_admin():
     # Allow GET requests for public event viewing
     if request.method == 'GET' and not request.path.endswith(('create', 'edit', 'delete')):
         return
+        
+    # Allow attendees to register and cancel registration
+    if request.endpoint in ['events.register', 'events.cancel_registration']:
+        return
+        
     if current_user.role not in [UserRole.ADMIN, UserRole.ORGANIZER]:
         abort(403)
 

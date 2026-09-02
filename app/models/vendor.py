@@ -78,6 +78,7 @@ class Vendor(db.Model):
     def assigned_events(self):
         """Get all events this vendor is assigned to."""
         from app.models.event import Event
+        from app.models.event_vendor import EventVendor
         return Event.query.join(EventVendor, EventVendor.event_id == Event.id).filter(
             EventVendor.vendor_id == self.id
         ).all()

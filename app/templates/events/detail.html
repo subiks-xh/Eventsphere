@@ -13,6 +13,7 @@
                 </a>
                 {% if event.status == 'draft' %}
                     <form action="{{ url_for('events.publish', event_id=event.id) }}" method="POST" class="d-inline">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <button type="submit" class="btn btn-success">
                             <i class="bi bi-send"></i> Publish
                         </button>
@@ -20,6 +21,7 @@
                 {% endif %}
                 {% if event.status != 'cancelled' %}
                     <form action="{{ url_for('events.cancel', event_id=event.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this event?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <button type="submit" class="btn btn-danger">
                             <i class="bi bi-x-circle"></i> Cancel
                         </button>
@@ -126,6 +128,7 @@
                         
                         {% if event.status == 'registration_open' and not registration.has_checked_in %}
                             <form action="{{ url_for('events.cancel_registration', event_id=event.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel your registration?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                 <button type="submit" class="btn btn-sm btn-outline-danger">
                                     <i class="bi bi-x-circle"></i> Cancel Registration
                                 </button>
@@ -141,6 +144,7 @@
                                 <div class="alert alert-warning">
                                     <i class="bi bi-exclamation-triangle"></i> This event is full. 
                                     <form action="{{ url_for('events.register', event_id=event.id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                         <button type="submit" class="btn btn-sm btn-outline-secondary">
                                             <i class="bi bi-list"></i> Join Waitlist
                                         </button>
@@ -148,6 +152,7 @@
                                 </div>
                             {% else %}
                                 <form action="{{ url_for('events.register', event_id=event.id) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                     <button type="submit" class="btn btn-primary">
                                         <i class="bi bi-calendar-plus"></i> Register Now
                                     </button>
@@ -196,6 +201,12 @@
                         </a>
                         <a href="{{ url_for('organizer.checkin', event_id=event.id) }}" class="btn btn-sm btn-outline-success w-100 mt-2">
                             <i class="bi bi-check-square"></i> Check-in ({{ event.attendance_count }})
+                        </a>
+                        <a href="{{ url_for('organizer.event_vendors', event_id=event.id) }}" class="btn btn-sm btn-outline-info w-100 mt-2">
+                            <i class="bi bi-shop"></i> Manage Vendors
+                        </a>
+                        <a href="{{ url_for('organizer.event_resources', event_id=event.id) }}" class="btn btn-sm btn-outline-secondary w-100 mt-2">
+                            <i class="bi bi-box-seam"></i> Manage Resources
                         </a>
                     {% endif %}
                 {% endif %}

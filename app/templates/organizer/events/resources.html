@@ -18,6 +18,7 @@
             </div>
             <div class="card-body">
                 <form action="{{ url_for('organizer.add_resource', event_id=event.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="mb-3">
                         <label for="resource_id" class="form-label">Resource</label>
                         <select class="form-select" id="resource_id" name="resource_id" required>
