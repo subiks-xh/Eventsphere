@@ -1,203 +1,367 @@
 {% extends "layout.html" %}
 
-{% block title %}Organizer Dashboard - EventSphere{% endblock %}
+{% block title %}Organizer Dashboard — EventSphere{% endblock %}
+
+{% block extra_css %}
+<style>
+/* === ORGANIZER DASHBOARD === */
+.dash-header {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid rgba(16,185,129,0.15);
+    border-radius: 1.25rem;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.75rem;
+    position: relative; overflow: hidden;
+}
+.dash-header::after {
+    content: ''; position: absolute; right: -60px; top: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+}
+.dash-header h1 {
+    font-size: 1.9rem; font-weight: 900; color: #0f172a;
+    margin: 0;
+}
+.dash-header h1::after { display: none; }
+.dash-subtitle { color: #64748b; font-size: 0.9rem; margin-top: 0.25rem; }
+
+/* KPI Cards */
+.kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.25rem; margin-bottom: 1.75rem; }
+@media(max-width:768px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:480px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+.kpi-card {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(14px);
+    border-radius: 1.1rem;
+    padding: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 6px 24px rgba(16,185,129,0.1);
+    transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative; overflow: hidden;
+    cursor: default;
+    margin-bottom: 0;
+    animation: fadeInUp 0.6s ease both;
+}
+.kpi-card:nth-child(1) { animation-delay: 0.05s; }
+.kpi-card:nth-child(2) { animation-delay: 0.1s; }
+.kpi-card:nth-child(3) { animation-delay: 0.15s; }
+.kpi-card:nth-child(4) { animation-delay: 0.2s; }
+.kpi-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 50px rgba(16,185,129,0.2); }
+.kpi-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.kpi-c1::before { background: linear-gradient(90deg,#059669,#10b981); }
+.kpi-c2::before { background: linear-gradient(90deg,#0284c7,#38bdf8); }
+.kpi-c3::before { background: linear-gradient(90deg,#7c3aed,#a78bfa); }
+.kpi-c4::before { background: linear-gradient(90deg,#d97706,#fbbf24); }
+
+.kpi-icon {
+    font-size: 1.8rem; margin-bottom: 0.75rem;
+    display: inline-block;
+}
+.kpi-c1 .kpi-icon { color: #059669; }
+.kpi-c2 .kpi-icon { color: #0284c7; }
+.kpi-c3 .kpi-icon { color: #7c3aed; }
+.kpi-c4 .kpi-icon { color: #d97706; }
+
+.kpi-value { font-size: 2rem; font-weight: 900; color: #0f172a; line-height: 1; margin-bottom: 0.3rem; }
+.kpi-label { font-size: 0.82rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.kpi-sub { font-size: 0.78rem; color: #94a3b8; margin-top: 0.2rem; }
+
+/* Quick Actions */
+.quick-actions {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+@media(max-width:768px) { .quick-actions { grid-template-columns: repeat(2,1fr); } }
+.qa-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0.9rem 1rem; border-radius: 0.9rem;
+    font-weight: 700; font-size: 0.9rem;
+    text-decoration: none; transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    border: 1.5px solid transparent;
+    position: relative; overflow: hidden;
+}
+.qa-btn:hover { transform: translateY(-4px); }
+.qa-btn-1 { background: linear-gradient(135deg,#059669,#10b981); color:white; box-shadow:0 6px 20px rgba(16,185,129,0.35); }
+.qa-btn-1:hover { box-shadow:0 12px 32px rgba(16,185,129,0.5); color:white; }
+.qa-btn-2 { background: linear-gradient(135deg,#0284c7,#38bdf8); color:white; box-shadow:0 6px 20px rgba(2,132,199,0.3); }
+.qa-btn-2:hover { box-shadow:0 12px 32px rgba(2,132,199,0.45); color:white; }
+.qa-btn-3 { background: linear-gradient(135deg,#7c3aed,#a78bfa); color:white; box-shadow:0 6px 20px rgba(124,58,237,0.3); }
+.qa-btn-3:hover { box-shadow:0 12px 32px rgba(124,58,237,0.45); color:white; }
+.qa-btn-4 { background: linear-gradient(135deg,#d97706,#fbbf24); color:white; box-shadow:0 6px 20px rgba(217,119,6,0.3); }
+.qa-btn-4:hover { box-shadow:0 12px 32px rgba(217,119,6,0.45); color:white; }
+
+/* Section Cards */
+.dash-card {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.7);
+    border-radius: 1.1rem;
+    box-shadow: 0 6px 24px rgba(16,185,129,0.08);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    animation: fadeInUp 0.7s ease both;
+}
+.dash-card-header {
+    padding: 1.1rem 1.5rem;
+    border-bottom: 1px solid rgba(16,185,129,0.08);
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 0.95rem; color: #0f172a;
+}
+.dash-card-header .header-icon {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+}
+.icon-green  { background: rgba(16,185,129,0.12); color: #059669; }
+.icon-blue   { background: rgba(2,132,199,0.1); color: #0284c7; }
+.icon-purple { background: rgba(124,58,237,0.1); color: #7c3aed; }
+.icon-amber  { background: rgba(217,119,6,0.1); color: #d97706; }
+
+.dash-card-body { padding: 1.25rem 1.5rem; }
+
+/* Table inside dash card */
+.dash-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.dash-table th {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #94a3b8; font-weight: 700; padding: 0.6rem 1rem;
+    border-bottom: 1.5px solid rgba(16,185,129,0.1);
+}
+.dash-table td {
+    padding: 0.8rem 1rem; font-size: 0.88rem; font-weight: 500;
+    border-bottom: 1px solid rgba(16,185,129,0.05);
+    vertical-align: middle;
+}
+.dash-table tr:last-child td { border-bottom: none; }
+.dash-table tr:hover td { background: rgba(16,185,129,0.03); }
+.dash-table a { color: #059669; text-decoration: none; font-weight: 600; }
+.dash-table a:hover { text-decoration: underline; }
+
+.event-badge {
+    display: inline-flex; align-items: center;
+    padding: 0.25em 0.7em; border-radius: 100px;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.3px;
+}
+.badge-confirmed { background: rgba(16,185,129,0.12); color: #059669; }
+.badge-pending   { background: rgba(245,158,11,0.12); color: #d97706; }
+.badge-cancelled { background: rgba(220,38,38,0.1); color: #dc2626; }
+.badge-active    { background: rgba(16,185,129,0.12); color: #059669; }
+.badge-completed { background: rgba(2,132,199,0.1); color: #0284c7; }
+.badge-draft     { background: rgba(100,116,139,0.1); color: #64748b; }
+
+.empty-state {
+    text-align: center; padding: 2.5rem 1rem; color: #94a3b8;
+}
+.empty-state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.4; }
+.empty-state p { margin-bottom: 1rem; font-size: 0.9rem; }
+
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-speedometer2"></i> Organizer Dashboard</h1>
+
+<!-- Page Header -->
+<div class="dash-header es-reveal">
+    <h1><i class="bi bi-speedometer2 text-success"></i> Organizer Dashboard</h1>
+    <p class="dash-subtitle">Welcome back! Here's what's happening with your events.</p>
 </div>
 
-<!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100 border-primary">
-            <div class="card-body">
-                <i class="bi bi-calendar-event text-primary" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ kpis.total_events }}</h3>
-                <p class="text-muted mb-0">Total Events</p>
-            </div>
-        </div>
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card kpi-c1">
+        <div class="kpi-icon"><i class="bi bi-calendar-event-fill"></i></div>
+        <div class="kpi-value">{{ kpis.total_events }}</div>
+        <div class="kpi-label">Total Events</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100 border-success">
-            <div class="card-body">
-                <i class="bi bi-ticket-perforated text-success" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ kpis.total_registrations }}</h3>
-                <p class="text-muted mb-0">Total Registrations</p>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c2">
+        <div class="kpi-icon"><i class="bi bi-ticket-perforated-fill"></i></div>
+        <div class="kpi-value">{{ kpis.total_registrations }}</div>
+        <div class="kpi-label">Total Registrations</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100 border-info">
-            <div class="card-body">
-                <i class="bi bi-person-check text-info" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ kpis.total_attendance }}</h3>
-                <p class="text-muted mb-0">Total Check-ins</p>
-                <small class="text-muted">{{ "%.1f"|format(kpis.attendance_rate) }}% Rate</small>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c3">
+        <div class="kpi-icon"><i class="bi bi-person-check-fill"></i></div>
+        <div class="kpi-value">{{ kpis.total_attendance }}</div>
+        <div class="kpi-label">Total Check-ins</div>
+        <div class="kpi-sub">{{ "%.1f"|format(kpis.attendance_rate) }}% Attendance Rate</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100 border-warning">
-            <div class="card-body">
-                <i class="bi bi-wallet2 text-warning" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ "%.1f"|format(kpis.utilization_rate) }}%</h3>
-                <p class="text-muted mb-0">Budget Utilization</p>
-                <small class="text-muted">₹{{ kpis.total_expenses }} / ₹{{ kpis.total_budget }}</small>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c4">
+        <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+        <div class="kpi-value">{{ "%.1f"|format(kpis.utilization_rate) }}%</div>
+        <div class="kpi-label">Budget Utilization</div>
+        <div class="kpi-sub">&#8377;{{ kpis.total_expenses }} / &#8377;{{ kpis.total_budget }}</div>
     </div>
 </div>
 
-<!-- Quick Links -->
-<div class="card mb-4">
-    <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Quick Links</h5>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-3 mb-2">
-                <a href="{{ url_for('organizer.my_events') }}" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-calendar-event"></i> My Events
-                </a>
-            </div>
-            <div class="col-md-3 mb-2">
-                <a href="{{ url_for('events.create') }}" class="btn btn-outline-success w-100">
-                    <i class="bi bi-plus-circle"></i> Create Event
-                </a>
-            </div>
-            <div class="col-md-3 mb-2">
-                <a href="{{ url_for('venue.index') }}" class="btn btn-outline-info w-100">
-                    <i class="bi bi-geo-alt"></i> Venues
-                </a>
-            </div>
-            <div class="col-md-3 mb-2">
-                <a href="#" class="btn btn-outline-warning w-100">
-                    <i class="bi bi-people"></i> Vendors
-                </a>
-            </div>
-        </div>
-    </div>
+<!-- Quick Actions -->
+<div class="quick-actions es-reveal">
+    <a href="{{ url_for('organizer.my_events') }}" class="qa-btn qa-btn-1">
+        <i class="bi bi-calendar-event-fill"></i> My Events
+    </a>
+    <a href="{{ url_for('events.create') }}" class="qa-btn qa-btn-2">
+        <i class="bi bi-plus-circle-fill"></i> Create Event
+    </a>
+    <a href="{{ url_for('venue.index') }}" class="qa-btn qa-btn-3">
+        <i class="bi bi-geo-alt-fill"></i> Venues
+    </a>
+    <a href="{{ url_for('budget.approvals_inbox') }}" class="qa-btn qa-btn-4">
+        <i class="bi bi-check2-square"></i> Approvals
+    </a>
 </div>
 
-<!-- My Events -->
-<div class="card mb-4">
-    <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-calendar-event"></i> My Recent Events</h5>
-    </div>
-    <div class="card-body">
-        {% if my_events %}
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Event</th>
-                            <th>Date</th>
-                            <th>Registrations</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for event in my_events %}
-                            <tr>
-                                <td>
-                                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
-                                        {{ event.name }}
-                                    </a>
-                                </td>
-                                <td>{{ event.date.strftime('%b %d, %Y') }}</td>
-                                <td>{{ event.confirmed_registrations_count }}</td>
-                                <td><span class="badge bg-{{ event.status|lower }}">{{ event.status|replace('_', ' ')|title }}</span></td>
-                                <td>
-                                    <a href="{{ url_for('organizer.event_registrations', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-people"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<!-- Analytics Charts -->
+{% if chart_labels or budget_dist_labels %}
+<div class="row mb-3">
+    <div class="col-md-8">
+        <div class="dash-card es-reveal">
+            <div class="dash-card-header">
+                <span class="header-icon icon-green"><i class="bi bi-graph-up-arrow"></i></span>
+                Event Attendance Analytics
             </div>
-        {% else %}
-            <p class="text-muted mb-0">No events created yet.</p>
-            <a href="{{ url_for('events.create') }}" class="btn btn-primary">Create Your First Event</a>
-        {% endif %}
-    </div>
-</div>
-
-<!-- Upcoming Events -->
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0"><i class="bi bi-calendar"></i> Upcoming Events</h5>
-            </div>
-            <div class="card-body">
-                {% if upcoming_events %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Event</th>
-                                    <th>Date</th>
-                                    <th>Venue</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for event in upcoming_events %}
-                                    <tr>
-                                        <td>
-                                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
-                                                {{ event.name }}
-                                            </a>
-                                        </td>
-                                        <td>{{ event.date.strftime('%b %d, %Y') }}</td>
-                                        <td>{{ event.venue.name if event.venue else 'TBD' }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="dash-card-body">
+                {% if chart_labels %}
+                <div style="position:relative; height:280px;">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
                 {% else %}
-                    <p class="text-muted mb-0">No upcoming events.</p>
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-bar-chart"></i></div>
+                    <p>No completed events to show analytics.</p>
+                </div>
                 {% endif %}
             </div>
         </div>
     </div>
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Events with High Waitlist</h5>
+    <div class="col-md-4">
+        <div class="dash-card es-reveal">
+            <div class="dash-card-header">
+                <span class="header-icon icon-amber"><i class="bi bi-pie-chart-fill"></i></span>
+                Budget Distribution
             </div>
-            <div class="card-body">
-                {% if high_waitlist_events %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Event</th>
-                                    <th>Waitlist</th>
-                                    <th>Capacity</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for event in high_waitlist_events %}
-                                    <tr>
-                                        <td>
-                                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
-                                                {{ event.name }}
-                                            </a>
-                                        </td>
-                                        <td>{{ event.waitlist_count }}</td>
-                                        <td>{{ event.capacity }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="dash-card-body">
+                {% if budget_dist_labels %}
+                <div style="position:relative; height:280px;">
+                    <canvas id="budgetChart"></canvas>
+                </div>
                 {% else %}
-                    <p class="text-muted mb-0">No events with high waitlist.</p>
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="bi bi-pie-chart"></i></div>
+                    <p>No approved expenses yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- My Recent Events Table -->
+<div class="dash-card es-reveal">
+    <div class="dash-card-header">
+        <span class="header-icon icon-green"><i class="bi bi-calendar-event"></i></span>
+        My Recent Events
+    </div>
+    <div class="dash-card-body" style="padding:0;">
+        {% if my_events %}
+        <div class="table-responsive">
+            <table class="dash-table">
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Date</th>
+                        <th>Registrations</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in my_events %}
+                    <tr>
+                        <td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a></td>
+                        <td>{{ event.date.strftime('%b %d, %Y') }}</td>
+                        <td><span style="font-weight:700;color:#059669;">{{ event.confirmed_registrations_count }}</span></td>
+                        <td>
+                            <span class="event-badge badge-{{ event.status|lower }}">
+                                {{ event.status|replace('_',' ')|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('organizer.event_registrations', event_id=event.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-people"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="bi bi-calendar-plus"></i></div>
+            <p>No events created yet. Start your journey!</p>
+            <a href="{{ url_for('events.create') }}" class="btn btn-primary">Create Your First Event</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Upcoming + Waitlist Row -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="dash-card es-reveal">
+            <div class="dash-card-header">
+                <span class="header-icon icon-blue"><i class="bi bi-calendar-check"></i></span>
+                Upcoming Events
+            </div>
+            <div class="dash-card-body" style="padding:0;">
+                {% if upcoming_events %}
+                <table class="dash-table">
+                    <thead>
+                        <tr><th>Event</th><th>Date</th><th>Venue</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for event in upcoming_events %}
+                        <tr>
+                            <td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a></td>
+                            <td>{{ event.date.strftime('%b %d') }}</td>
+                            <td>{{ event.venue.name if event.venue else 'TBD' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state"><div class="empty-state-icon"><i class="bi bi-calendar3"></i></div><p>No upcoming events.</p></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="dash-card es-reveal">
+            <div class="dash-card-header">
+                <span class="header-icon icon-amber"><i class="bi bi-exclamation-triangle-fill"></i></span>
+                Events with High Waitlist
+            </div>
+            <div class="dash-card-body" style="padding:0;">
+                {% if high_waitlist_events %}
+                <table class="dash-table">
+                    <thead>
+                        <tr><th>Event</th><th>Waitlist</th><th>Capacity</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for event in high_waitlist_events %}
+                        <tr>
+                            <td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a></td>
+                            <td><span style="color:#d97706; font-weight:700;">{{ event.waitlist_count }}</span></td>
+                            <td>{{ event.capacity }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state"><div class="empty-state-icon"><i class="bi bi-check-circle"></i></div><p>No events with high waitlist.</p></div>
                 {% endif %}
             </div>
         </div>
@@ -205,74 +369,43 @@
 </div>
 
 <!-- Recent Registrations -->
-<div class="card">
-    <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-person-plus"></i> Recent Registrations</h5>
+<div class="dash-card es-reveal">
+    <div class="dash-card-header">
+        <span class="header-icon icon-purple"><i class="bi bi-person-plus-fill"></i></span>
+        Recent Registrations
     </div>
-    <div class="card-body">
+    <div class="dash-card-body" style="padding:0;">
         {% if recent_registrations %}
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Event</th>
-                            <th>Attendee</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for reg in recent_registrations %}
-                            <tr>
-                                <td>{{ reg.event.name }}</td>
-                                <td>{{ reg.user.full_name }}</td>
-                                <td>{{ reg.registration_date.strftime('%b %d, %Y') }}</td>
-                                <td><span class="badge bg-{{ 'success' if reg.is_confirmed else 'secondary' }}">{{ reg.status|title }}</span></td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-responsive">
+            <table class="dash-table">
+                <thead>
+                    <tr><th>Event</th><th>Attendee</th><th>Date</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for reg in recent_registrations %}
+                    <tr>
+                        <td>{{ reg.event.name }}</td>
+                        <td>{{ reg.user.full_name }}</td>
+                        <td>{{ reg.registration_date.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            <span class="event-badge {{ 'badge-confirmed' if reg.is_confirmed else 'badge-pending' }}">
+                                {{ reg.status|title }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-            <p class="text-muted mb-0">No recent registrations.</p>
+        <div class="empty-state"><div class="empty-state-icon"><i class="bi bi-people"></i></div><p>No recent registrations.</p></div>
         {% endif %}
     </div>
 </div>
 
-<!-- Event Analytics Graph -->
-<div class="row mb-4 mt-4">
-    <div class="col-md-8">
-        <div class="card border-primary h-100">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Event Attendance Analytics</h5>
-            </div>
-            <div class="card-body">
-                {% if chart_labels %}
-                <canvas id="attendanceChart" height="250"></canvas>
-                {% else %}
-                <p class="text-muted text-center py-4">No completed events to show analytics.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-warning h-100">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Budget Distribution</h5>
-            </div>
-            <div class="card-body">
-                {% if budget_dist_labels %}
-                <canvas id="budgetChart" height="250"></canvas>
-                {% else %}
-                <p class="text-muted text-center py-4">No approved expenses yet.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
 {% if chart_labels or budget_dist_labels %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -287,28 +420,27 @@ document.addEventListener("DOMContentLoaded", function() {
                 {
                     label: 'Registrations',
                     data: {{ chart_registrations|tojson }},
-                    backgroundColor: 'rgba(13, 110, 253, 0.5)',
-                    borderColor: 'rgba(13, 110, 253, 1)',
-                    borderWidth: 1
+                    backgroundColor: 'rgba(16,185,129,0.25)',
+                    borderColor: '#10b981',
+                    borderWidth: 2,
+                    borderRadius: 6,
                 },
                 {
                     label: 'Actual Attendance',
                     data: {{ chart_attendance|tojson }},
-                    backgroundColor: 'rgba(25, 135, 84, 0.5)',
-                    borderColor: 'rgba(25, 135, 84, 1)',
-                    borderWidth: 1
+                    backgroundColor: 'rgba(5,150,105,0.45)',
+                    borderColor: '#059669',
+                    borderWidth: 2,
+                    borderRadius: 6,
                 }
             ]
         },
         options: {
-            responsive: true,
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { font: { family:'Inter', weight:'600' } } } },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
+                x: { grid: { display: false }, ticks: { font: { family: 'Inter', size:11 } } },
+                y: { beginAtZero: true, grid: { color:'rgba(16,185,129,0.07)' }, ticks: { font: { family:'Inter', size:11 }, stepSize: 1 } }
             }
         }
     });
@@ -322,23 +454,38 @@ document.addEventListener("DOMContentLoaded", function() {
             labels: {{ budget_dist_labels|tojson }},
             datasets: [{
                 data: {{ budget_dist_data|tojson }},
-                backgroundColor: [
-                    'rgba(25, 135, 84, 0.7)',
-                    'rgba(13, 110, 253, 0.7)',
-                    'rgba(255, 193, 7, 0.7)',
-                    'rgba(220, 53, 69, 0.7)',
-                    'rgba(13, 202, 240, 0.7)'
-                ],
-                borderWidth: 1
+                backgroundColor: ['#10b981','#0284c7','#7c3aed','#d97706','#ef4444'],
+                borderColor: 'rgba(255,255,255,0.8)',
+                borderWidth: 3,
+                hoverOffset: 8
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position:'bottom', labels: { font: { family:'Inter', size:11, weight:'600' }, padding:12 } } }
         }
     });
     {% endif %}
 });
 </script>
 {% endif %}
+
+<script>
+// Animate KPI counters
+document.querySelectorAll('.kpi-value').forEach(el => {
+    const text = el.textContent.trim();
+    const hasPct = text.includes('%');
+    const num = parseFloat(text.replace('%',''));
+    if (isNaN(num)) return;
+    let current = 0;
+    const duration = 1200;
+    const steps = 50;
+    const increment = num / steps;
+    const timer = setInterval(() => {
+        current = Math.min(current + increment, num);
+        el.textContent = hasPct ? current.toFixed(1) + '%' : Math.round(current);
+        if (current >= num) clearInterval(timer);
+    }, duration / steps);
+});
+</script>
 {% endblock %}

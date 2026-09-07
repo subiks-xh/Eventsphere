@@ -7,7 +7,7 @@ from datetime import datetime
 from flask import Blueprint, render_template
 from flask_login import current_user
 
-main_bp = Blueprint('main', __name__)
+main_bp = Blueprint('main', __name__, template_folder='../templates')
 
 
 @main_bp.route('/')
@@ -15,17 +15,14 @@ def index():
     """Home page route."""
     if current_user.is_authenticated:
         # Redirect to appropriate dashboard based on role
+        from flask import redirect, url_for
         if current_user.is_admin:
-            from flask import redirect, url_for
             return redirect(url_for('admin.dashboard'))
         elif current_user.is_organizer:
-            from flask import redirect, url_for
             return redirect(url_for('organizer.dashboard'))
         elif current_user.is_attendee:
-            from flask import redirect, url_for
             return redirect(url_for('attendee.dashboard'))
         elif current_user.is_vendor:
-            from flask import redirect, url_for
             return redirect(url_for('vendor.dashboard'))
     
     # Show public home page

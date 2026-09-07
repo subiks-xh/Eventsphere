@@ -43,7 +43,7 @@ class User(UserMixin, db.Model):
     first_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
     phone = db.Column(db.String(20))
-    role = db.Column(db.String(20), nullable=False, default=UserRole.ATTENDEE, index=True)
+    role = db.Column(db.String(20), nullable=False, default=UserRole.ATTENDEE)
     status = db.Column(db.String(20), nullable=False, default=UserStatus.ACTIVE)
     profile_image = db.Column(db.String(256))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -106,38 +106,19 @@ class User(UserMixin, db.Model):
         """Check if user is vendor."""
         return self.role == UserRole.VENDOR
 
-    def get_id(self):
-        """Get user ID for Flask-Login."""
-        return str(self.id)
-
-    @property
-    def unread_notifications(self):
-        """Get count of unread notifications."""
-        from app.models.notification import Notification
-        return Notification.query.filter_by(
-            user_id=self.id, is_read=False
-        ).count()
-
     @property
     def attended_events_count(self):
-        """Get count of events attended."""
-        from app.models.attendance import Attendance
-        from app.models.registration import Registration
-        return Attendance.query.join(Registration).filter(
-            Registration.user_id == self.id
-        ).count()
+        """Count of events attended."""
+        return sum(1 for r in self.registrations if r.has_checked_in)
 
     @property
     def feedback_count(self):
-        """Get count of feedback submitted."""
-        from app.models.feedback import Feedback
-        return Feedback.query.filter_by(user_id=self.id).count()
+        """Count of feedback submitted."""
+        return len(self.feedbacks)
 
-    @property
-    def badges(self):
-        """Compute gamification badges for this user."""
-        from app.utils.badges import compute_badges
-        return compute_badges(self)
+    def get_id(self):
+        """Get user ID for Flask-Login."""
+        return str(self.id)
 
     def __repr__(self):
         return f"<User {self.username} ({self.role})>"

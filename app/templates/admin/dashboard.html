@@ -1,194 +1,246 @@
 {% extends "layout.html" %}
 
-{% block title %}Admin Dashboard - EventSphere{% endblock %}
+{% block title %}Admin Dashboard — EventSphere{% endblock %}
+
+{% block extra_css %}
+<style>
+/* === ADMIN DASHBOARD === */
+.dash-header {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid rgba(16,185,129,0.15);
+    border-radius: 1.25rem; padding: 1.75rem 2rem;
+    margin-bottom: 1.75rem; position: relative; overflow: hidden;
+}
+.dash-header::after {
+    content:''; position:absolute; right:-60px; top:-60px;
+    width:220px; height:220px;
+    background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+    border-radius:50%;
+}
+.dash-header h1 { font-size:1.9rem; font-weight:900; color:#0f172a; margin:0; }
+.dash-header h1::after { display:none; }
+.dash-subtitle { color:#64748b; font-size:0.9rem; margin-top:0.25rem; }
+
+/* KPI Grid */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; margin-bottom:1.75rem; }
+@media(max-width:992px){ .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+.kpi-card {
+    background:rgba(255,255,255,0.9); backdrop-filter:blur(14px);
+    border-radius:1.1rem; padding:1.5rem;
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 6px 24px rgba(16,185,129,0.1);
+    transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    position:relative; overflow:hidden; margin-bottom:0;
+}
+.kpi-card:hover { transform:translateY(-8px) scale(1.02); box-shadow:0 20px 50px rgba(16,185,129,0.2); }
+.kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.kpi-c1::before { background:linear-gradient(90deg,#059669,#10b981); }
+.kpi-c2::before { background:linear-gradient(90deg,#0284c7,#38bdf8); }
+.kpi-c3::before { background:linear-gradient(90deg,#7c3aed,#a78bfa); }
+.kpi-c4::before { background:linear-gradient(90deg,#d97706,#fbbf24); }
+.kpi-icon { font-size:1.8rem; margin-bottom:0.75rem; display:inline-block; }
+.kpi-c1 .kpi-icon { color:#059669; } .kpi-c2 .kpi-icon { color:#0284c7; }
+.kpi-c3 .kpi-icon { color:#7c3aed; } .kpi-c4 .kpi-icon { color:#d97706; }
+.kpi-value { font-size:2rem; font-weight:900; color:#0f172a; line-height:1; margin-bottom:0.3rem; }
+.kpi-label { font-size:0.82rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+
+/* Quick Actions */
+.quick-actions { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.75rem; }
+@media(max-width:768px){ .quick-actions { grid-template-columns:repeat(2,1fr); } }
+.qa-btn {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:0.9rem 1rem; border-radius:0.9rem;
+    font-weight:700; font-size:0.88rem; text-decoration:none;
+    transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.qa-btn:hover { transform:translateY(-4px); }
+.qa-btn-1 { background:linear-gradient(135deg,#059669,#10b981); color:white; box-shadow:0 6px 20px rgba(16,185,129,0.35); }
+.qa-btn-1:hover { box-shadow:0 12px 32px rgba(16,185,129,0.5); color:white; }
+.qa-btn-2 { background:linear-gradient(135deg,#0284c7,#38bdf8); color:white; box-shadow:0 6px 20px rgba(2,132,199,0.3); }
+.qa-btn-2:hover { box-shadow:0 12px 32px rgba(2,132,199,0.45); color:white; }
+.qa-btn-3 { background:linear-gradient(135deg,#7c3aed,#a78bfa); color:white; box-shadow:0 6px 20px rgba(124,58,237,0.3); }
+.qa-btn-3:hover { box-shadow:0 12px 32px rgba(124,58,237,0.45); color:white; }
+.qa-btn-4 { background:linear-gradient(135deg,#d97706,#fbbf24); color:white; box-shadow:0 6px 20px rgba(217,119,6,0.3); }
+.qa-btn-4:hover { box-shadow:0 12px 32px rgba(217,119,6,0.45); color:white; }
+
+/* Dash Card */
+.dash-card {
+    background:rgba(255,255,255,0.9); backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,0.7); border-radius:1.1rem;
+    box-shadow:0 6px 24px rgba(16,185,129,0.08); margin-bottom:1.5rem; overflow:hidden;
+}
+.dash-card-header {
+    padding:1.1rem 1.5rem; border-bottom:1px solid rgba(16,185,129,0.08);
+    display:flex; align-items:center; gap:10px;
+    font-weight:700; font-size:0.95rem; color:#0f172a;
+}
+.header-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+.icon-green { background:rgba(16,185,129,0.12); color:#059669; }
+.icon-blue  { background:rgba(2,132,199,0.1); color:#0284c7; }
+.icon-amber { background:rgba(217,119,6,0.1); color:#d97706; }
+.icon-purple { background:rgba(124,58,237,0.1); color:#7c3aed; }
+
+.dash-table { width:100%; border-collapse:separate; border-spacing:0; }
+.dash-table th { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; font-weight:700; padding:0.6rem 1rem; border-bottom:1.5px solid rgba(16,185,129,0.1); }
+.dash-table td { padding:0.8rem 1rem; font-size:0.88rem; font-weight:500; border-bottom:1px solid rgba(16,185,129,0.05); vertical-align:middle; }
+.dash-table tr:last-child td { border-bottom:none; }
+.dash-table tr:hover td { background:rgba(16,185,129,0.03); }
+.dash-table a { color:#059669; text-decoration:none; font-weight:600; }
+
+.badge-status {
+    display:inline-flex; align-items:center; padding:0.25em 0.7em;
+    border-radius:100px; font-size:0.72rem; font-weight:700; letter-spacing:0.3px;
+}
+.status-active, .status-success, .status-completed { background:rgba(16,185,129,0.12); color:#059669; }
+.status-pending { background:rgba(245,158,11,0.12); color:#d97706; }
+.status-cancelled, .status-inactive { background:rgba(220,38,38,0.1); color:#dc2626; }
+.status-upcoming { background:rgba(2,132,199,0.1); color:#0284c7; }
+.role-badge { background:rgba(124,58,237,0.1); color:#7c3aed; padding:0.25em 0.7em; border-radius:100px; font-size:0.72rem; font-weight:700; text-transform:capitalize; }
+
+.empty-state { text-align:center; padding:2.5rem 1rem; color:#94a3b8; }
+.empty-state-icon { font-size:2.5rem; margin-bottom:0.75rem; opacity:0.4; }
+
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-speedometer2"></i> Admin Dashboard</h1>
+
+<!-- Page Header -->
+<div class="dash-header es-reveal">
+    <h1><i class="bi bi-shield-lock-fill" style="color:#10b981;"></i> System Administration</h1>
+    <p class="dash-subtitle">Overview of platform metrics and recent system activity.</p>
 </div>
 
-<!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-people text-primary" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_users }}</h3>
-                <p class="text-muted mb-0">Total Users</p>
-            </div>
-        </div>
+<!-- KPI Cards row 1 -->
+<div class="kpi-grid">
+    <div class="kpi-card kpi-c1">
+        <div class="kpi-icon"><i class="bi bi-people-fill"></i></div>
+        <div class="kpi-value">{{ total_users }}</div>
+        <div class="kpi-label">Total Users</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-calendar-event text-success" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_events }}</h3>
-                <p class="text-muted mb-0">Total Events</p>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c2">
+        <div class="kpi-icon"><i class="bi bi-calendar-event-fill"></i></div>
+        <div class="kpi-value">{{ total_events }}</div>
+        <div class="kpi-label">Total Events</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-geo-alt text-info" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_venues }}</h3>
-                <p class="text-muted mb-0">Total Venues</p>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c3">
+        <div class="kpi-icon"><i class="bi bi-geo-alt-fill"></i></div>
+        <div class="kpi-value">{{ total_venues }}</div>
+        <div class="kpi-label">Total Venues</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-person-workspace text-warning" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_vendors }}</h3>
-                <p class="text-muted mb-0">Total Vendors</p>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c4">
+        <div class="kpi-icon"><i class="bi bi-building"></i></div>
+        <div class="kpi-value">{{ total_vendors }}</div>
+        <div class="kpi-label">Total Vendors</div>
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-ticket-perforated text-secondary" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_registrations }}</h3>
-                <p class="text-muted mb-0">Total Registrations</p>
-            </div>
-        </div>
+<!-- KPI Cards row 2 -->
+<div class="kpi-grid">
+    <div class="kpi-card kpi-c2">
+        <div class="kpi-icon"><i class="bi bi-ticket-perforated-fill"></i></div>
+        <div class="kpi-value">{{ total_registrations }}</div>
+        <div class="kpi-label">Total Registrations</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-person-check text-primary" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_attendees }}</h3>
-                <p class="text-muted mb-0">Total Attendees</p>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c1">
+        <div class="kpi-icon"><i class="bi bi-person-check-fill"></i></div>
+        <div class="kpi-value">{{ total_attendees }}</div>
+        <div class="kpi-label">Total Attendees</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-person-plus text-success" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ total_organizers }}</h3>
-                <p class="text-muted mb-0">Total Organizers</p>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c3">
+        <div class="kpi-icon"><i class="bi bi-person-badge-fill"></i></div>
+        <div class="kpi-value">{{ total_organizers }}</div>
+        <div class="kpi-label">Total Organizers</div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-calendar-check text-info" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ upcoming_events|length }}</h3>
-                <p class="text-muted mb-0">Upcoming Events</p>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c4">
+        <div class="kpi-icon"><i class="bi bi-calendar-check-fill"></i></div>
+        <div class="kpi-value">{{ upcoming_events|length }}</div>
+        <div class="kpi-label">Upcoming Events</div>
     </div>
 </div>
 
-<!-- Quick Links -->
-<div class="card mb-4">
-    <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Quick Links</h5>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-3 mb-2">
-                <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-people"></i> Manage Users
-                </a>
-            </div>
-            <div class="col-md-3 mb-2">
-                <a href="{{ url_for('venue.index') }}" class="btn btn-outline-success w-100">
-                    <i class="bi bi-geo-alt"></i> Manage Venues
-                </a>
-            </div>
-            <div class="col-md-3 mb-2">
-                <a href="{{ url_for('events.index') }}" class="btn btn-outline-info w-100">
-                    <i class="bi bi-calendar-event"></i> View Events
-                </a>
-            </div>
-            <div class="col-md-3 mb-2">
-                <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-warning w-100">
-                    <i class="bi bi-journal"></i> View Audit Logs
-                </a>
-            </div>
-        </div>
-    </div>
+<!-- Quick Actions -->
+<div class="quick-actions es-reveal">
+    <a href="{{ url_for('admin.users') }}" class="qa-btn qa-btn-1">
+        <i class="bi bi-people-fill"></i> Manage Users
+    </a>
+    <a href="{{ url_for('venue.index') }}" class="qa-btn qa-btn-2">
+        <i class="bi bi-geo-alt-fill"></i> Manage Venues
+    </a>
+    <a href="{{ url_for('events.index') }}" class="qa-btn qa-btn-3">
+        <i class="bi bi-calendar-event-fill"></i> View Events
+    </a>
+    <a href="{{ url_for('admin.audit_logs') }}" class="qa-btn qa-btn-4">
+        <i class="bi bi-journal-text"></i> Audit Logs
+    </a>
 </div>
 
-<!-- Recent Activity -->
+<!-- Recent Activity row -->
 <div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Recent Events</h5>
+    <div class="col-md-6">
+        <div class="dash-card es-reveal">
+            <div class="dash-card-header">
+                <span class="header-icon icon-green"><i class="bi bi-calendar-event"></i></span>
+                Recent Events
             </div>
-            <div class="card-body">
+            <div style="padding:0;">
                 {% if recent_events %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Event</th>
-                                    <th>Date</th>
-                                    <th>Organizer</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for event in recent_events %}
-                                    <tr>
-                                        <td>
-                                            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
-                                                {{ event.name }}
-                                            </a>
-                                        </td>
-                                        <td>{{ event.date.strftime('%b %d, %Y') }}</td>
-                                        <td>{{ event.organizer.username }}</td>
-                                        <td><span class="badge bg-{{ event.status|lower }}">{{ event.status|replace('_', ' ')|title }}</span></td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead><tr><th>Event</th><th>Date</th><th>Organizer</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for event in recent_events %}
+                            <tr>
+                                <td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a></td>
+                                <td>{{ event.date.strftime('%b %d, %Y') }}</td>
+                                <td>{{ event.organizer.username }}</td>
+                                <td>
+                                    <span class="badge-status status-{{ event.status|lower }}">
+                                        {{ event.status|replace('_',' ')|title }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% else %}
-                    <p class="text-muted mb-0">No recent events.</p>
+                <div class="empty-state"><div class="empty-state-icon"><i class="bi bi-calendar-x"></i></div><p>No recent events.</p></div>
                 {% endif %}
             </div>
         </div>
     </div>
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header bg-light">
-                <h5 class="mb-0"><i class="bi bi-people"></i> Recent Users</h5>
+    
+    <div class="col-md-6">
+        <div class="dash-card es-reveal">
+            <div class="dash-card-header">
+                <span class="header-icon icon-blue"><i class="bi bi-people"></i></span>
+                Recent Users
             </div>
-            <div class="card-body">
+            <div style="padding:0;">
                 {% if recent_users %}
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Name</th>
-                                    <th>Role</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for user in recent_users %}
-                                    <tr>
-                                        <td>{{ user.username }}</td>
-                                        <td>{{ user.full_name }}</td>
-                                        <td><span class="badge bg-primary">{{ user.role|title }}</span></td>
-                                        <td><span class="badge bg-{{ 'success' if user.is_active else 'secondary' }}">{{ user.status }}</span></td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for user in recent_users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.full_name }}</td>
+                                <td><span class="role-badge">{{ user.role }}</span></td>
+                                <td>
+                                    <span class="badge-status {{ 'status-active' if user.is_active else 'status-inactive' }}">
+                                        {{ user.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% else %}
-                    <p class="text-muted mb-0">No recent users.</p>
+                <div class="empty-state"><div class="empty-state-icon"><i class="bi bi-person-x"></i></div><p>No recent users.</p></div>
                 {% endif %}
             </div>
         </div>
@@ -196,41 +248,32 @@
 </div>
 
 <!-- Upcoming Events -->
-<div class="card">
-    <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-calendar"></i> Upcoming Events</h5>
+<div class="dash-card es-reveal">
+    <div class="dash-card-header">
+        <span class="header-icon icon-amber"><i class="bi bi-calendar-check"></i></span>
+        Upcoming Events
     </div>
-    <div class="card-body">
+    <div style="padding:0;">
         {% if upcoming_events %}
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Event</th>
-                            <th>Date</th>
-                            <th>Venue</th>
-                            <th>Organizer</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for event in upcoming_events %}
-                            <tr>
-                                <td>
-                                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
-                                        {{ event.name }}
-                                    </a>
-                                </td>
-                                <td>{{ event.date.strftime('%b %d, %Y') }}</td>
-                                <td>{{ event.venue.name if event.venue else 'TBD' }}</td>
-                                <td>{{ event.organizer.username }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-responsive">
+            <table class="dash-table">
+                <thead><tr><th>Event</th><th>Date</th><th>Venue</th><th>Organizer</th></tr></thead>
+                <tbody>
+                    {% for event in upcoming_events %}
+                    <tr>
+                        <td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a></td>
+                        <td>{{ event.date.strftime('%b %d, %Y') }}</td>
+                        <td>{{ event.venue.name if event.venue else 'TBD' }}</td>
+                        <td>{{ event.organizer.username }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-            <p class="text-muted mb-0">No upcoming events.</p>
+        <div class="empty-state"><div class="empty-state-icon"><i class="bi bi-calendar-x"></i></div><p>No upcoming events.</p></div>
         {% endif %}
     </div>
 </div>
+
 {% endblock %}

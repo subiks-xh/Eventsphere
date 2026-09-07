@@ -64,15 +64,15 @@ class Event(db.Model):
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
     category = db.Column(db.String(50), nullable=False, default=EventCategory.OTHER)
-    date = db.Column(db.Date, nullable=False, index=True)
+    date = db.Column(db.Date, nullable=False)
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
-    venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'), index=True)
+    venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
     capacity = db.Column(db.Integer, nullable=False, default=0)
     registration_deadline = db.Column(db.DateTime)
-    status = db.Column(db.String(50), nullable=False, default=EventStatus.DRAFT, index=True)
+    status = db.Column(db.String(50), nullable=False, default=EventStatus.DRAFT)
     image = db.Column(db.String(256))
-    organizer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    organizer_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -82,8 +82,6 @@ class Event(db.Model):
     vendors = db.relationship('EventVendor', backref='event', foreign_keys='EventVendor.event_id', lazy=True, cascade='all, delete-orphan')
     resources = db.relationship('EventResource', backref='event', foreign_keys='EventResource.event_id', lazy=True, cascade='all, delete-orphan')
     feedbacks = db.relationship('Feedback', backref='event', foreign_keys='Feedback.event_id', lazy=True)
-    budget = db.relationship('Budget', backref='event', uselist=False, lazy=True, cascade='all, delete-orphan')
-    sponsorships = db.relationship('Sponsorship', backref='event', lazy=True, cascade='all, delete-orphan')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

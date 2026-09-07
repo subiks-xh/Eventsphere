@@ -1,228 +1,320 @@
 {% extends "layout.html" %}
 
-{% block title %}{% if title %}{{ title }} - {% endif %}EventSphere{% endblock %}
+{% block title %}{% if title %}{{ title }} — {% endif %}EventSphere{% endblock %}
+
+{% block extra_css %}
+<style>
+/* === EVENT DETAIL PAGE === */
+.ev-hero {
+    background: linear-gradient(135deg, rgba(16,185,129,0.05), rgba(52,211,153,0.1));
+    border: 1px solid rgba(16,185,129,0.15);
+    border-radius: 1.25rem; padding: 2.5rem;
+    margin-bottom: 2rem; position: relative; overflow: hidden;
+    backdrop-filter: blur(14px);
+    display: flex; flex-direction: column; gap: 1.5rem;
+}
+.ev-hero::before {
+    content:''; position:absolute; right:-100px; top:-100px;
+    width:300px; height:300px;
+    background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+    border-radius:50%; pointer-events: none;
+}
+.ev-header-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; position: relative; z-index: 1; }
+.ev-title { font-size: 2.2rem; font-weight: 900; color: #0f172a; margin: 0; line-height: 1.2; letter-spacing:-0.5px; }
+.ev-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+.ev-meta-bar {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+    background: rgba(255,255,255,0.7);
+    padding: 1rem 1.5rem; border-radius: 1rem;
+    border: 1px solid rgba(255,255,255,0.8);
+    position: relative; z-index: 1;
+}
+.ev-meta-item { display: flex; align-items: center; gap: 12px; }
+.ev-meta-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, #059669, #10b981); color: white;
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+}
+.ev-meta-text { display: flex; flex-direction: column; }
+.ev-meta-label { font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.ev-meta-value { font-size: 0.95rem; font-weight: 700; color: #0f172a; }
+
+.dash-card {
+    background: rgba(255,255,255,0.9); backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.7); border-radius: 1.1rem;
+    box-shadow: 0 6px 24px rgba(16,185,129,0.08); margin-bottom: 1.5rem; overflow: hidden;
+}
+.dash-card-header {
+    padding: 1.1rem 1.5rem; border-bottom: 1px solid rgba(16,185,129,0.08);
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 0.95rem; color: #0f172a;
+}
+.header-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+.icon-green { background:rgba(16,185,129,0.12); color:#059669; }
+.icon-blue  { background:rgba(2,132,199,0.1); color:#0284c7; }
+.dash-card-body { padding: 1.5rem; }
+
+.btn-primary { background: linear-gradient(135deg, #059669, #10b981) !important; border: none !important; box-shadow: 0 4px 14px rgba(16,185,129,0.3) !important; }
+.btn-primary:hover { box-shadow: 0 8px 20px rgba(16,185,129,0.4) !important; transform: translateY(-2px); }
+
+.ev-progress-wrap { background: rgba(16,185,129,0.1); border-radius: 100px; height: 10px; overflow: hidden; margin-top: 0.5rem; }
+.ev-progress-bar { background: linear-gradient(90deg, #059669, #34d399); height: 100%; border-radius: 100px; }
+
+.stat-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.9rem; }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { color: #64748b; font-weight: 600; }
+.stat-value { font-weight: 800; color: #0f172a; }
+
+.badge-status {
+    display:inline-flex; align-items:center; padding:0.3em 0.8em;
+    border-radius:100px; font-size:0.75rem; font-weight:700; letter-spacing:0.3px;
+}
+.status-active, .status-success, .status-registration_open { background:rgba(16,185,129,0.12); color:#059669; }
+.status-pending { background:rgba(245,158,11,0.12); color:#d97706; }
+.status-cancelled { background:rgba(220,38,38,0.1); color:#dc2626; }
+.status-draft { background:rgba(100,116,139,0.1); color:#64748b; }
+.status-completed { background:rgba(2,132,199,0.1); color:#0284c7; }
+
+.side-action-btn {
+    display: flex; align-items: center; gap: 8px; justify-content: center;
+    width: 100%; padding: 0.7rem; border-radius: 0.5rem;
+    font-weight: 700; font-size: 0.85rem; margin-bottom: 0.5rem;
+    transition: all 0.2s ease; border: 1.5px solid transparent;
+}
+.side-action-btn.outline { background: transparent; border-color: rgba(16,185,129,0.3); color: #059669; }
+.side-action-btn.outline:hover { background: rgba(16,185,129,0.08); border-color: #10b981; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-calendar-event"></i> {{ event.name }}</h1>
-    <div>
-        {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_organizer) %}
-            {% if current_user.id == event.organizer_id or current_user.is_admin %}
-                <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-warning">
-                    <i class="bi bi-pencil"></i> Edit
-                </a>
-                {% if event.status == 'draft' %}
-                    <form action="{{ url_for('events.publish', event_id=event.id) }}" method="POST" class="d-inline">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-send"></i> Publish
-                        </button>
-                    </form>
+<div class="ev-hero es-reveal">
+    <div class="ev-header-top">
+        <h1 class="ev-title">{{ event.name }}</h1>
+        <div class="ev-actions">
+            {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_organizer) %}
+                {% if current_user.id == event.organizer_id or current_user.is_admin %}
+                    <a href="{{ url_for('events.edit', event_id=event.id) }}" class="btn btn-warning" style="border-radius:0.5rem;font-weight:600;"><i class="bi bi-pencil"></i> Edit</a>
+                    {% if event.status == 'draft' %}
+                        <form action="{{ url_for('events.publish', event_id=event.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-success" style="border-radius:0.5rem;font-weight:600;"><i class="bi bi-send"></i> Publish</button>
+                        </form>
+                    {% endif %}
+                    {% if event.status != 'cancelled' %}
+                        <form action="{{ url_for('events.cancel', event_id=event.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Cancel this event?')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-danger" style="border-radius:0.5rem;font-weight:600;"><i class="bi bi-x-circle"></i> Cancel</button>
+                        </form>
+                    {% endif %}
+                    <a href="{{ url_for('budget.dashboard', event_id=event.id) }}" class="btn btn-info text-white" style="border-radius:0.5rem;font-weight:600;"><i class="bi bi-wallet2"></i> Budget</a>
                 {% endif %}
-                {% if event.status != 'cancelled' %}
-                    <form action="{{ url_for('events.cancel', event_id=event.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this event?')">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </button>
-                    </form>
-                {% endif %}
-                <a href="{{ url_for('budget.dashboard', event_id=event.id) }}" class="btn btn-info text-white">
-                    <i class="bi bi-wallet2"></i> Budget
-                </a>
             {% endif %}
-        {% endif %}
-        <a href="{{ url_for('events.index') }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Back
-        </a>
+            <a href="{{ url_for('events.index') }}" class="btn btn-light" style="border-radius:0.5rem;font-weight:600;"><i class="bi bi-arrow-left"></i> Back</a>
+        </div>
+    </div>
+    
+    <div class="ev-meta-bar">
+        <div class="ev-meta-item">
+            <div class="ev-meta-icon"><i class="bi bi-calendar3"></i></div>
+            <div class="ev-meta-text">
+                <span class="ev-meta-label">Date</span>
+                <span class="ev-meta-value">{{ event.date.strftime('%B %d, %Y') }}</span>
+            </div>
+        </div>
+        <div class="ev-meta-item">
+            <div class="ev-meta-icon"><i class="bi bi-clock"></i></div>
+            <div class="ev-meta-text">
+                <span class="ev-meta-label">Time</span>
+                <span class="ev-meta-value">{{ event.time_str }} ({{ "%.1f"|format(event.duration) }}h)</span>
+            </div>
+        </div>
+        <div class="ev-meta-item">
+            <div class="ev-meta-icon"><i class="bi bi-geo-alt-fill"></i></div>
+            <div class="ev-meta-text">
+                <span class="ev-meta-label">Venue</span>
+                <span class="ev-meta-value">
+                    {% if event.venue %}
+                        <a href="{{ url_for('venue.detail', venue_id=event.venue.id) }}" style="color:#0f172a;text-decoration:none;">{{ event.venue.name }}</a>
+                    {% else %}
+                        TBD
+                    {% endif %}
+                </span>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="row">
-    <!-- Event Details -->
+    <!-- Main Content -->
     <div class="col-lg-8">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h4><i class="bi bi-info-circle"></i> Event Details</h4>
-                <hr>
-                
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <p><strong><i class="bi bi-calendar"></i> Date:</strong> {{ event.date.strftime('%B %d, %Y') }}</p>
-                        <p><strong><i class="bi bi-clock"></i> Time:</strong> {{ event.time_str }}</p>
-                        <p><strong><i class="bi bi-hourglass-split"></i> Duration:</strong> {{ "%.1f"|format(event.duration) }} hours</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong><i class="bi bi-geo-alt"></i> Venue:</strong> 
-                            {% if event.venue %}
-                                <a href="{{ url_for('venue.detail', venue_id=event.venue.id) }}">{{ event.venue.name }}</a>
-                                <br><small class="text-muted">{{ event.venue.full_address }}</small>
-                            {% else %}
-                                TBD
-                            {% endif %}
-                        </p>
-                        <p><strong><i class="bi bi-person"></i> Organizer:</strong> {{ event.organizer.full_name }}</p>
-                    </div>
-                </div>
-                
+        <div class="dash-card es-reveal">
+            <div class="dash-card-header">
+                <span class="header-icon icon-blue"><i class="bi bi-info-circle-fill"></i></span>
+                About the Event
+            </div>
+            <div class="dash-card-body">
                 {% if event.description %}
-                    <div class="mb-3">
-                        <h5>Description</h5>
-                        <p>{{ event.description }}</p>
-                    </div>
+                    <p style="color:#334155; line-height:1.6;">{{ event.description }}</p>
+                {% else %}
+                    <p style="color:#94a3b8; font-style:italic;">No description provided.</p>
                 {% endif %}
                 
-                <div class="row">
-                    <div class="col-md-4">
-                        <p><strong>Category:</strong> {{ event.category|title }}</p>
+                <hr style="border-color:rgba(16,185,129,0.1); margin:1.5rem 0;">
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div>
+                        <div style="font-size:0.8rem;color:#64748b;font-weight:700;text-transform:uppercase;">Category</div>
+                        <div style="font-weight:600;color:#0f172a;">{{ event.category|title }}</div>
                     </div>
-                    <div class="col-md-4">
-                        <p><strong>Capacity:</strong> {{ event.capacity }}</p>
-                    </div>
-                    <div class="col-md-4">
-                        <p><strong>Registrations:</strong> {{ event.confirmed_registrations_count }}/{{ event.capacity }}</p>
+                    <div>
+                        <div style="font-size:0.8rem;color:#64748b;font-weight:700;text-transform:uppercase;">Organizer</div>
+                        <div style="font-weight:600;color:#0f172a;">{{ event.organizer.full_name }}</div>
                     </div>
                 </div>
-                
+
                 {% if event.registration_deadline %}
-                    <p><strong>Registration Deadline:</strong> {{ event.registration_deadline.strftime('%B %d, %Y %I:%M %p') }}</p>
+                <div style="margin-top:1rem; padding:1rem; background:rgba(245,158,11,0.08); border-radius:0.5rem; border-left:4px solid #f59e0b;">
+                    <i class="bi bi-clock-history" style="color:#d97706;"></i>
+                    <strong style="color:#d97706;">Registration Deadline:</strong>
+                    <span style="color:#92400e;">{{ event.registration_deadline.strftime('%B %d, %Y %I:%M %p') }}</span>
+                </div>
                 {% endif %}
-                
-                <!-- Venue Conflict Warning -->
+
                 {% if has_conflict and conflicting_events %}
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle"></i> <strong>Venue Conflict Detected!</strong>
-                        <p>This event conflicts with:</p>
-                        <ul>
-                            {% for conflict in conflicting_events %}
-                                <li><a href="{{ url_for('events.detail', event_id=conflict.id) }}">{{ conflict.name }}</a> 
-                                    on {{ conflict.date.strftime('%b %d, %Y') }} at {{ conflict.time_str }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                <div class="alert alert-danger mt-3" style="border-radius:0.5rem; border-left:4px solid #dc2626;">
+                    <i class="bi bi-exclamation-triangle-fill"></i> <strong>Venue Conflict Detected!</strong>
+                    <p class="mb-1">This event conflicts with:</p>
+                    <ul class="mb-0">
+                        {% for conflict in conflicting_events %}
+                            <li><a href="{{ url_for('events.detail', event_id=conflict.id) }}" style="color:#b91c1c; font-weight:600;">{{ conflict.name }}</a> 
+                                on {{ conflict.date.strftime('%b %d, %Y') }} at {{ conflict.time_str }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
                 {% endif %}
             </div>
         </div>
-        
-        <!-- Registration Status -->
+
         {% if current_user.is_authenticated %}
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h4><i class="bi bi-person-check"></i> My Registration Status</h4>
-                    <hr>
-                    
-                    {% if is_registered %}
-                        <div class="alert alert-success">
-                            <i class="bi bi-check-circle"></i> You are registered for this event!
-                            {% if registration.has_ticket %}
-                                <p class="mb-0">
-                                    <a href="{{ url_for('attendee.view_ticket', ticket_id=registration.ticket.id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="bi bi-ticket-perforated"></i> View Ticket
-                                    </a>
-                                    {% if registration.has_checked_in %}
-                                        <span class="badge bg-success ms-2">Checked In</span>
-                                    {% endif %}
-                                </p>
-                            {% endif %}
-                        </div>
+        <div class="dash-card es-reveal">
+            <div class="dash-card-header">
+                <span class="header-icon icon-green"><i class="bi bi-person-check-fill"></i></span>
+                My Registration Status
+            </div>
+            <div class="dash-card-body">
+                {% if is_registered %}
+                    <div style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(16,185,129,0.05)); padding:1.5rem; border-radius:1rem; border:1px solid rgba(16,185,129,0.2);">
+                        <h5 style="color:#059669; font-weight:800; margin-bottom:0.5rem;"><i class="bi bi-check-circle-fill"></i> You are registered!</h5>
+                        <p style="color:#0f172a; font-size:0.9rem;">We're excited to see you there.</p>
                         
-                        {% if event.status == 'registration_open' and not registration.has_checked_in %}
-                            <form action="{{ url_for('events.cancel_registration', event_id=event.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel your registration?')">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                <button type="submit" class="btn btn-sm btn-outline-danger">
-                                    <i class="bi bi-x-circle"></i> Cancel Registration
-                                </button>
-                            </form>
-                        {% endif %}
-                    {% elif is_on_waitlist %}
-                        <div class="alert alert-info">
-                            <i class="bi bi-hourglass-split"></i> You are on the waitlist at position {{ waitlist_entry.position }}.
-                        </div>
-                    {% else %}
-                        {% if event.status == 'registration_open' %}
-                            {% if event.is_full %}
-                                <div class="alert alert-warning">
-                                    <i class="bi bi-exclamation-triangle"></i> This event is full. 
-                                    <form action="{{ url_for('events.register', event_id=event.id) }}" method="POST" class="d-inline">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                        <button type="submit" class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-list"></i> Join Waitlist
-                                        </button>
-                                    </form>
-                                </div>
-                            {% else %}
-                                <form action="{{ url_for('events.register', event_id=event.id) }}" method="POST" class="d-inline">
+                        <div style="display:flex; gap:10px; margin-top:1rem;">
+                            {% if registration.has_ticket %}
+                                <a href="{{ url_for('attendee.view_ticket', ticket_id=registration.ticket.id) }}" class="btn btn-primary" style="border-radius:0.5rem;"><i class="bi bi-ticket-perforated"></i> View Ticket</a>
+                            {% endif %}
+                            
+                            {% if event.status == 'registration_open' and not registration.has_checked_in %}
+                                <form action="{{ url_for('events.cancel_registration', event_id=event.id) }}" method="POST" onsubmit="return confirm('Cancel registration?')">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-calendar-plus"></i> Register Now
-                                    </button>
+                                    <button type="submit" class="btn btn-light" style="border-radius:0.5rem;color:#dc2626;"><i class="bi bi-x-circle"></i> Cancel</button>
                                 </form>
                             {% endif %}
-                        {% else %}
-                            <div class="alert alert-secondary">
-                                <i class="bi bi-info-circle"></i> Registration is not currently open for this event.
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                </div>
-            </div>
-        {% endif %}
-    </div>
-    
-    <!-- Event Sidebar -->
-    <div class="col-lg-4">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title"><i class="bi bi-people"></i> Registration Info</h5>
-                <p class="card-text">
-                    <strong>Status:</strong> <span class="badge bg-{{ event.status|lower }}">{{ event.status|replace('_', ' ')|title }}</span>
-                </p>
-                <p class="card-text">
-                    <strong>Confirmed:</strong> {{ event.confirmed_registrations_count }}<br>
-                    <strong>Waitlist:</strong> {{ event.waitlist_count }}<br>
-                    <strong>Capacity:</strong> {{ event.capacity }}
-                </p>
-                
-                {% if event.capacity > 0 %}
-                    <div class="progress mb-3">
-                        <div class="progress-bar bg-success" role="progressbar" 
-                             style="width: {{ (event.confirmed_registrations_count / event.capacity * 100)|int }}%"
-                             aria-valuenow="{{ (event.confirmed_registrations_count / event.capacity * 100)|int }}" 
-                             aria-valuemin="0" aria-valuemax="100">
-                            {{ (event.confirmed_registrations_count / event.capacity * 100)|int }}%
                         </div>
                     </div>
-                {% endif %}
-                
-                {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_organizer) %}
-                    {% if current_user.id == event.organizer_id or current_user.is_admin %}
-                        <a href="{{ url_for('organizer.event_registrations', event_id=event.id) }}" class="btn btn-sm btn-outline-primary w-100">
-                            <i class="bi bi-people"></i> View Registrations ({{ event.confirmed_registrations_count }})
-                        </a>
-                        <a href="{{ url_for('organizer.checkin', event_id=event.id) }}" class="btn btn-sm btn-outline-success w-100 mt-2">
-                            <i class="bi bi-check-square"></i> Check-in ({{ event.attendance_count }})
-                        </a>
-                        <a href="{{ url_for('organizer.event_vendors', event_id=event.id) }}" class="btn btn-sm btn-outline-info w-100 mt-2">
-                            <i class="bi bi-shop"></i> Manage Vendors
-                        </a>
-                        <a href="{{ url_for('organizer.event_resources', event_id=event.id) }}" class="btn btn-sm btn-outline-secondary w-100 mt-2">
-                            <i class="bi bi-box-seam"></i> Manage Resources
-                        </a>
+                {% elif is_on_waitlist %}
+                    <div style="background:rgba(245,158,11,0.1); padding:1.5rem; border-radius:1rem; border:1px solid rgba(245,158,11,0.2);">
+                        <h5 style="color:#d97706; font-weight:800; margin-bottom:0.5rem;"><i class="bi bi-hourglass-split"></i> You are on the waitlist</h5>
+                        <p style="color:#92400e; font-size:0.9rem; margin:0;">Your position: <strong>#{{ waitlist_entry.position }}</strong>. We'll notify you if a spot opens up.</p>
+                    </div>
+                {% else %}
+                    {% if event.status == 'registration_open' %}
+                        {% if event.is_full %}
+                            <div style="background:rgba(245,158,11,0.1); padding:1.5rem; border-radius:1rem; border:1px solid rgba(245,158,11,0.2); display:flex; align-items:center; justify-content:space-between;">
+                                <div>
+                                    <h5 style="color:#d97706; font-weight:800; margin-bottom:0.25rem;"><i class="bi bi-exclamation-triangle-fill"></i> Event is Full</h5>
+                                    <p style="color:#92400e; font-size:0.9rem; margin:0;">Join the waitlist to get notified if spots open.</p>
+                                </div>
+                                <form action="{{ url_for('events.register', event_id=event.id) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-warning" style="font-weight:700;border-radius:0.5rem;"><i class="bi bi-list"></i> Join Waitlist</button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <div style="text-align:center; padding:1.5rem;">
+                                <form action="{{ url_for('events.register', event_id=event.id) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-primary btn-lg" style="border-radius:0.75rem; padding:0.8rem 2.5rem; font-size:1.1rem;"><i class="bi bi-calendar-plus"></i> Secure Your Spot</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div style="background:rgba(100,116,139,0.1); padding:1.5rem; border-radius:1rem; text-align:center;">
+                            <i class="bi bi-info-circle-fill" style="font-size:2rem; color:#64748b; margin-bottom:0.5rem; display:block;"></i>
+                            <h6 style="color:#334155; font-weight:700; margin:0;">Registration is not open</h6>
+                        </div>
                     {% endif %}
                 {% endif %}
             </div>
         </div>
-        
-        {% if event.organizer %}
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title"><i class="bi bi-person"></i> Organizer</h5>
-                    <p class="card-text">
-                        <strong>{{ event.organizer.full_name }}</strong><br>
-                        <small class="text-muted">{{ event.organizer.username }}</small>
-                    </p>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="dash-card es-reveal">
+            <div class="dash-card-header">
+                <span class="header-icon icon-blue"><i class="bi bi-bar-chart-fill"></i></span>
+                Capacity Status
+            </div>
+            <div class="dash-card-body">
+                <div style="margin-bottom:1rem;">
+                    <span class="badge-status status-{{ event.status|lower }}">
+                        {{ event.status|replace('_',' ')|title }}
+                    </span>
+                </div>
+                
+                <div class="stat-row"><span class="stat-label">Capacity</span><span class="stat-value">{{ event.capacity }}</span></div>
+                <div class="stat-row"><span class="stat-label">Confirmed</span><span class="stat-value" style="color:#059669;">{{ event.confirmed_registrations_count }}</span></div>
+                <div class="stat-row"><span class="stat-label">Waitlist</span><span class="stat-value" style="color:#d97706;">{{ event.waitlist_count }}</span></div>
+                
+                {% if event.capacity > 0 %}
+                <div style="margin-top:1.5rem;">
+                    <div style="display:flex;justify-content:space-between;font-size:0.8rem;font-weight:700;color:#64748b;">
+                        <span>Fill Rate</span>
+                        <span>{{ (event.confirmed_registrations_count / event.capacity * 100)|int }}%</span>
+                    </div>
+                    <div class="ev-progress-wrap">
+                        <div class="ev-progress-bar" style="width:{{ (event.confirmed_registrations_count / event.capacity * 100)|int }}%;"></div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if current_user.is_authenticated and (current_user.is_admin or current_user.is_organizer) %}
+            {% if current_user.id == event.organizer_id or current_user.is_admin %}
+            <div class="dash-card es-reveal">
+                <div class="dash-card-header">
+                    <span class="header-icon icon-green"><i class="bi bi-gear-fill"></i></span>
+                    Management Tools
+                </div>
+                <div class="dash-card-body" style="padding:1.25rem;">
+                    <a href="{{ url_for('organizer.event_registrations', event_id=event.id) }}" class="side-action-btn outline">
+                        <i class="bi bi-people-fill"></i> Registrations ({{ event.confirmed_registrations_count }})
+                    </a>
+                    <a href="{{ url_for('organizer.checkin', event_id=event.id) }}" class="side-action-btn outline">
+                        <i class="bi bi-check-square-fill"></i> Check-in ({{ event.attendance_count }})
+                    </a>
+                    <a href="{{ url_for('organizer.event_vendors', event_id=event.id) }}" class="side-action-btn outline">
+                        <i class="bi bi-shop"></i> Vendors
+                    </a>
+                    <a href="{{ url_for('organizer.event_resources', event_id=event.id) }}" class="side-action-btn outline">
+                        <i class="bi bi-box-seam-fill"></i> Resources
+                    </a>
                 </div>
             </div>
+            {% endif %}
         {% endif %}
     </div>
 </div>

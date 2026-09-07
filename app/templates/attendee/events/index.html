@@ -13,7 +13,7 @@
         <div class="col-md-4 mb-4">
             <div class="card h-100">
                 {% if event.image %}
-                    <img src="{{ event.image }}" class="card-img-top" alt="{{ event.name }}" style="height: 180px; object-fit: cover;">
+                    <img src="{{ url_for('static', filename='img/' ~ event.image) }}" class="card-img-top" alt="{{ event.name }}" style="height: 180px; object-fit: cover;">
                 {% else %}
                     <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
                         <i class="bi bi-calendar-event text-white" style="font-size: 3rem;"></i>

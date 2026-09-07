@@ -1,162 +1,242 @@
 {% extends "layout.html" %}
 
-{% block title %}Vendor Dashboard - EventSphere{% endblock %}
+{% block title %}Vendor Dashboard — EventSphere{% endblock %}
+
+{% block extra_css %}
+<style>
+/* === VENDOR DASHBOARD === */
+.dash-header {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid rgba(16,185,129,0.15);
+    border-radius: 1.25rem; padding: 1.75rem 2rem;
+    margin-bottom: 1.75rem; position: relative; overflow: hidden;
+}
+.dash-header::after {
+    content:''; position:absolute; right:-60px; top:-60px;
+    width:220px; height:220px;
+    background: radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%);
+    border-radius:50%;
+}
+.dash-header h1 { font-size:1.9rem; font-weight:900; color:#0f172a; margin:0; }
+.dash-header h1::after { display:none; }
+.dash-subtitle { color:#64748b; font-size:0.9rem; margin-top:0.25rem; }
+
+/* Profile Banner */
+.vendor-profile-banner {
+    background: rgba(255,255,255,0.9); backdrop-filter:blur(14px);
+    border-radius: 1.1rem; border: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 6px 24px rgba(16,185,129,0.08);
+    padding: 1.5rem; margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+}
+.vendor-avatar {
+    width: 72px; height: 72px; border-radius: 1rem;
+    background: linear-gradient(135deg, #059669, #10b981);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: white; flex-shrink: 0;
+    box-shadow: 0 8px 24px rgba(16,185,129,0.3);
+}
+.vendor-info { flex: 1; }
+.vendor-name { font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 0.2rem; }
+.vendor-service { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-bottom: 0.5rem; }
+.vendor-meta { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.83rem; color: #64748b; }
+.vendor-meta span { display:flex; align-items:center; gap:5px; }
+.vendor-meta i { color:#10b981; }
+
+/* KPI Grid */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; margin-bottom:1.75rem; }
+@media(max-width:768px){ .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+.kpi-card {
+    background:rgba(255,255,255,0.9); backdrop-filter:blur(14px);
+    border-radius:1.1rem; padding:1.5rem;
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 6px 24px rgba(16,185,129,0.1);
+    transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    position:relative; overflow:hidden; margin-bottom:0;
+}
+.kpi-card:hover { transform:translateY(-8px) scale(1.02); box-shadow:0 20px 50px rgba(16,185,129,0.2); }
+.kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+.kpi-c1::before { background:linear-gradient(90deg,#059669,#10b981); }
+.kpi-c2::before { background:linear-gradient(90deg,#d97706,#fbbf24); }
+.kpi-c3::before { background:linear-gradient(90deg,#7c3aed,#a78bfa); }
+.kpi-c4::before { background:linear-gradient(90deg,#0284c7,#38bdf8); }
+.kpi-icon { font-size:1.8rem; margin-bottom:0.75rem; display:inline-block; }
+.kpi-c1 .kpi-icon { color:#059669; } .kpi-c2 .kpi-icon { color:#d97706; }
+.kpi-c3 .kpi-icon { color:#7c3aed; } .kpi-c4 .kpi-icon { color:#0284c7; }
+.kpi-value { font-size:2rem; font-weight:900; color:#0f172a; line-height:1; margin-bottom:0.3rem; }
+.kpi-label { font-size:0.82rem; color:#64748b; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+
+/* Quick Actions */
+.quick-actions { display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; margin-bottom:1.75rem; }
+.qa-btn {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    padding:0.9rem 1rem; border-radius:0.9rem;
+    font-weight:700; font-size:0.9rem; text-decoration:none;
+    transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.qa-btn:hover { transform:translateY(-4px); }
+.qa-btn-1 { background:linear-gradient(135deg,#059669,#10b981); color:white; box-shadow:0 6px 20px rgba(16,185,129,0.35); }
+.qa-btn-1:hover { box-shadow:0 12px 32px rgba(16,185,129,0.5); color:white; }
+.qa-btn-2 { background:linear-gradient(135deg,#0284c7,#38bdf8); color:white; box-shadow:0 6px 20px rgba(2,132,199,0.3); }
+.qa-btn-2:hover { box-shadow:0 12px 32px rgba(2,132,199,0.45); color:white; }
+
+/* Dash Card */
+.dash-card {
+    background:rgba(255,255,255,0.9); backdrop-filter:blur(14px);
+    border:1px solid rgba(255,255,255,0.7); border-radius:1.1rem;
+    box-shadow:0 6px 24px rgba(16,185,129,0.08); margin-bottom:1.5rem; overflow:hidden;
+}
+.dash-card-header {
+    padding:1.1rem 1.5rem; border-bottom:1px solid rgba(16,185,129,0.08);
+    display:flex; align-items:center; gap:10px;
+    font-weight:700; font-size:0.95rem; color:#0f172a;
+}
+.header-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1rem; }
+.icon-green { background:rgba(16,185,129,0.12); color:#059669; }
+.icon-blue  { background:rgba(2,132,199,0.1); color:#0284c7; }
+
+.dash-table { width:100%; border-collapse:separate; border-spacing:0; }
+.dash-table th { font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:#94a3b8; font-weight:700; padding:0.6rem 1rem; border-bottom:1.5px solid rgba(16,185,129,0.1); }
+.dash-table td { padding:0.8rem 1rem; font-size:0.88rem; font-weight:500; border-bottom:1px solid rgba(16,185,129,0.05); vertical-align:middle; }
+.dash-table tr:last-child td { border-bottom:none; }
+.dash-table tr:hover td { background:rgba(16,185,129,0.03); }
+.dash-table a { color:#059669; text-decoration:none; font-weight:600; }
+
+.status-select {
+    border-radius:0.5rem; border:1.5px solid rgba(16,185,129,0.15);
+    padding:0.3rem 0.7rem; font-size:0.82rem; font-weight:600;
+    background:rgba(255,255,255,0.9); cursor:pointer;
+    transition:all 0.2s ease;
+}
+.status-select:focus { border-color:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,0.12); outline:none; }
+
+.empty-state { text-align:center; padding:2.5rem 1rem; color:#94a3b8; }
+.empty-state-icon { font-size:2.5rem; margin-bottom:0.75rem; opacity:0.4; }
+
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><i class="bi bi-speedometer2"></i> Vendor Dashboard</h1>
+
+<!-- Page Header -->
+<div class="dash-header es-reveal">
+    <h1><i class="bi bi-building" style="color:#10b981;"></i> Vendor Dashboard</h1>
+    <p class="dash-subtitle">Manage your events and update your service status here.</p>
 </div>
 
-<!-- Profile Card -->
+<!-- Vendor Profile Banner -->
 {% if vendor %}
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-3">
-                <i class="bi bi-building text-primary" style="font-size: 4rem;"></i>
-            </div>
-            <div class="col-md-9">
-                <h2>{{ vendor.business_name }}</h2>
-                <p class="text-muted">{{ vendor.service|title }} Provider</p>
-                <p><strong>Contact:</strong> {{ vendor.contact_person }}<br>
-                   <strong>Email:</strong> {{ vendor.email }}<br>
-                   <strong>Phone:</strong> {{ vendor.phone }}</p>
-                <a href="{{ url_for('vendor.profile') }}" class="btn btn-outline-primary">
-                    <i class="bi bi-pencil"></i> Edit Profile
-                </a>
-            </div>
+<div class="vendor-profile-banner es-reveal">
+    <div class="vendor-avatar"><i class="bi bi-building"></i></div>
+    <div class="vendor-info">
+        <div class="vendor-name">{{ vendor.business_name }}</div>
+        <div class="vendor-service">{{ vendor.service|title }} Provider</div>
+        <div class="vendor-meta">
+            <span><i class="bi bi-person"></i> {{ vendor.contact_person }}</span>
+            <span><i class="bi bi-envelope"></i> {{ vendor.email }}</span>
+            <span><i class="bi bi-telephone"></i> {{ vendor.phone }}</span>
         </div>
     </div>
+    <a href="{{ url_for('vendor.profile') }}" class="btn btn-outline-primary">
+        <i class="bi bi-pencil"></i> Edit Profile
+    </a>
 </div>
 {% else %}
-<div class="alert alert-warning mb-4">
-    <i class="bi bi-exclamation-triangle"></i> Please complete your vendor profile.
+<div class="alert alert-warning mb-4 es-reveal">
+    <i class="bi bi-exclamation-triangle"></i>
+    Please complete your vendor profile to get started.
     <a href="{{ url_for('vendor.profile') }}" class="btn btn-primary ms-3">Complete Profile</a>
 </div>
 {% endif %}
 
-<!-- Statistics -->
-<div class="row mb-4">
-    <div class="col-md-4 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-calendar-event text-primary" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ assigned_events|length }}</h3>
-                <p class="text-muted mb-0">Assigned Events</p>
-            </div>
-        </div>
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card kpi-c1">
+        <div class="kpi-icon"><i class="bi bi-calendar-event-fill"></i></div>
+        <div class="kpi-value">{{ assigned_events|length }}</div>
+        <div class="kpi-label">Assigned Events</div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-hourglass-split text-warning" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ pending_assignments|length }}</h3>
-                <p class="text-muted mb-0">Pending</p>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c2">
+        <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+        <div class="kpi-value">{{ pending_assignments|length }}</div>
+        <div class="kpi-label">Pending</div>
     </div>
-    <div class="col-md-4 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-check-circle text-success" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ confirmed_assignments|length }}</h3>
-                <p class="text-muted mb-0">Confirmed</p>
-            </div>
-        </div>
+    <div class="kpi-card kpi-c3">
+        <div class="kpi-icon"><i class="bi bi-check-circle-fill"></i></div>
+        <div class="kpi-value">{{ confirmed_assignments|length }}</div>
+        <div class="kpi-label">Confirmed</div>
+    </div>
+    <div class="kpi-card kpi-c4">
+        <div class="kpi-icon"><i class="bi bi-check2-all"></i></div>
+        <div class="kpi-value">{{ completed_assignments|length }}</div>
+        <div class="kpi-label">Completed</div>
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-4 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="bi bi-check2-square text-info" style="font-size: 2.5rem;"></i>
-                <h3 class="mt-2">{{ completed_assignments|length }}</h3>
-                <p class="text-muted mb-0">Completed</p>
-            </div>
-        </div>
-    </div>
+<!-- Quick Actions -->
+<div class="quick-actions es-reveal">
+    <a href="{{ url_for('vendor.events') }}" class="qa-btn qa-btn-1">
+        <i class="bi bi-calendar-event-fill"></i> My Events
+    </a>
+    <a href="{{ url_for('vendor.profile') }}" class="qa-btn qa-btn-2">
+        <i class="bi bi-person-badge-fill"></i> My Profile
+    </a>
 </div>
 
-<!-- Quick Links -->
-<div class="card mb-4">
-    <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-link-45deg"></i> Quick Links</h5>
+<!-- Assigned Events Table -->
+<div class="dash-card es-reveal">
+    <div class="dash-card-header">
+        <span class="header-icon icon-green"><i class="bi bi-calendar-event"></i></span>
+        My Assigned Events
     </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-4 mb-2">
-                <a href="{{ url_for('vendor.events') }}" class="btn btn-outline-primary w-100">
-                    <i class="bi bi-calendar-event"></i> My Events
-                </a>
-            </div>
-            <div class="col-md-4 mb-2">
-                <a href="{{ url_for('vendor.profile') }}" class="btn btn-outline-success w-100">
-                    <i class="bi bi-person"></i> My Profile
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Assigned Events -->
-<div class="card">
-    <div class="card-header bg-light">
-        <h5 class="mb-0"><i class="bi bi-calendar-event"></i> My Assigned Events</h5>
-    </div>
-    <div class="card-body">
+    <div style="padding:0;">
         {% if vendor and vendor.assigned_events %}
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Event</th>
-                            <th>Date</th>
-                            <th>Venue</th>
-                            <th>Service</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for event in vendor.assigned_events %}
-                            <tr>
-                                <td>
-                                    <a href="{{ url_for('events.detail', event_id=event.id) }}" class="text-decoration-none">
-                                        {{ event.name }}
-                                    </a>
-                                </td>
-                                <td>{{ event.date.strftime('%b %d, %Y') }}</td>
-                                <td>{{ event.venue.name if event.venue else 'TBD' }}</td>
-                                <td>
-                                    {% for assignment in vendor.event_assignments %}
-                                        {% if assignment.event_id == event.id %}
-                                            {{ assignment.service|replace('_', ' ')|title }}<br>
-                                        {% endif %}
-                                    {% endfor %}
-                                </td>
-                                <td>
-                                    {% for assignment in vendor.event_assignments %}
-                                        {% if assignment.event_id == event.id %}
-                                            <form action="{{ url_for('vendor.update_status', assignment_id=assignment.id) }}" method="POST" class="d-flex align-items-center">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                                                <select name="status" class="form-select form-select-sm me-2" onchange="this.form.submit()">
-                                                    <option value="pending" {% if assignment.status == 'pending' %}selected{% endif %}>Pending</option>
-                                                    <option value="confirmed" {% if assignment.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
-                                                    <option value="completed" {% if assignment.status == 'completed' %}selected{% endif %}>Completed</option>
-                                                    <option value="cancelled" {% if assignment.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
-                                                </select>
-                                            </form>
-                                        {% endif %}
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-responsive">
+            <table class="dash-table">
+                <thead>
+                    <tr><th>Event</th><th>Date</th><th>Venue</th><th>Service</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for event in vendor.assigned_events %}
+                    <tr>
+                        <td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a></td>
+                        <td>{{ event.date.strftime('%b %d, %Y') }}</td>
+                        <td>{{ event.venue.name if event.venue else 'TBD' }}</td>
+                        <td>
+                            {% for assignment in vendor.event_assignments %}
+                                {% if assignment.event_id == event.id %}
+                                <span style="font-weight:600;color:#059669;">{{ assignment.service|replace('_',' ')|title }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for assignment in vendor.event_assignments %}
+                                {% if assignment.event_id == event.id %}
+                                <form action="{{ url_for('vendor.update_status', assignment_id=assignment.id) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <select name="status" class="status-select" onchange="this.form.submit()">
+                                        <option value="pending"   {% if assignment.status == 'pending'   %}selected{% endif %}>Pending</option>
+                                        <option value="confirmed" {% if assignment.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                        <option value="completed" {% if assignment.status == 'completed' %}selected{% endif %}>Completed</option>
+                                        <option value="cancelled" {% if assignment.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                    </select>
+                                </form>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% else %}
-            <p class="text-muted mb-0">No events assigned yet.</p>
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="bi bi-calendar-plus"></i></div>
+            <p>No events assigned yet. Complete your profile to get assigned to events.</p>
+        </div>
         {% endif %}
     </div>
 </div>
+
 {% endblock %}

@@ -1,11 +1,27 @@
 {% extends "base.html" %}
 
 {% block body %}
+    <!-- Custom Cursor -->
+    <div id="es-cursor"></div>
+    <div id="es-cursor-follower"></div>
+    
+    <!-- Page Transition Overlay -->
+    <div id="es-page-transition"></div>
+
+    <!-- Global Ambient Animated Background -->
+    <div class="es-global-bg" aria-hidden="true">
+        <canvas id="global-canvas"></canvas>
+        <div class="g-orb g-orb-1"></div>
+        <div class="g-orb g-orb-2"></div>
+        <div class="g-orb g-orb-3"></div>
+    </div>
+
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-light es-navbar">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="bi bi-calendar-event"></i> EventSphere
+            <a class="navbar-brand es-brand" href="{{ url_for('main.index') }}">
+                <span class="es-brand-icon">⬡</span>
+                <span class="es-brand-text">EventSphere</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -95,7 +111,7 @@
                             <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-light ms-2" href="{{ url_for('auth.register') }}">Register</a>
+                            <a class="btn btn-primary ms-2" href="{{ url_for('auth.register') }}">Register</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -122,9 +138,9 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light py-4 mt-5">
+    <footer class="es-footer py-4 mt-5">
         <div class="container text-center">
-            <p class="mb-0 text-muted">&copy; 2026 EventSphere. All rights reserved.</p>
+            <p class="mb-0 text-muted">© 2026 <strong>EventSphere</strong>. All rights reserved. Built with ❤️ for Milestone 3.</p>
         </div>
     </footer>
     
@@ -153,4 +169,143 @@
     });
     </script>
     {% endif %}
+
+    <!-- Vanilla Tilt JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+
+    <!-- Global Ambient Canvas Animation & Custom Cursor & Transitions -->
+    <script>
+    (function() {
+        // Page Transitions
+        try {
+            const transitionOverlay = document.getElementById('es-page-transition');
+            if (transitionOverlay) {
+                setTimeout(() => { transitionOverlay.classList.add('hide'); }, 100);
+                document.querySelectorAll('a:not([target="_blank"]):not([href^="#"]):not([data-bs-toggle])').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        if(this.href && this.href !== window.location.href) {
+                            e.preventDefault();
+                            transitionOverlay.classList.remove('hide');
+                            setTimeout(() => { window.location = this.href; }, 300);
+                        }
+                    });
+                });
+            }
+        } catch (e) { console.error('Transition error:', e); }
+
+        // Vanilla Tilt initialization
+        try {
+            if (typeof VanillaTilt !== 'undefined') {
+                VanillaTilt.init(document.querySelectorAll(".kpi-card, .ev-card, .dash-card, .auth-card"), {
+                    max: 5, speed: 400, glare: true, "max-glare": 0.2, perspective: 1000, scale: 1.02
+                });
+            }
+        } catch (e) { console.error('VanillaTilt error:', e); }
+
+        // Custom Cursor
+        try {
+            const cursor = document.getElementById('es-cursor');
+            const follower = document.getElementById('es-cursor-follower');
+            if (cursor && follower) {
+                let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+                let followerX = mouseX, followerY = mouseY;
+                
+                document.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                    cursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+                });
+                
+                function animateCursor() {
+                    followerX += (mouseX - followerX) * 0.15;
+                    followerY += (mouseY - followerY) * 0.15;
+                    follower.style.transform = `translate3d(${followerX}px, ${followerY}px, 0)`;
+                    requestAnimationFrame(animateCursor);
+                }
+                animateCursor();
+                
+                document.querySelectorAll('a, button, input, select, .kpi-card, .ev-card').forEach(el => {
+                    el.addEventListener('mouseenter', () => { cursor.classList.add('active'); follower.classList.add('active'); });
+                    el.addEventListener('mouseleave', () => { cursor.classList.remove('active'); follower.classList.remove('active'); });
+                });
+            }
+        } catch (e) { console.error('Cursor error:', e); }
+
+        // Interactive Canvas Engine
+        try {
+            const canvas = document.getElementById('global-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                let particles = [];
+                let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+                
+                document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+
+                function resize() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                }
+                resize();
+                window.addEventListener('resize', resize);
+
+                class Particle {
+                    constructor() { this.reset(true); }
+                    reset(init) {
+                        this.x = Math.random() * canvas.width;
+                        this.y = init ? Math.random() * canvas.height : -10;
+                        this.size = Math.random() * 1.8 + 0.3;
+                        this.baseSpeedX = (Math.random() - 0.5) * 0.3;
+                        this.baseSpeedY = Math.random() * 0.3 + 0.1;
+                        this.speedX = this.baseSpeedX;
+                        this.speedY = this.baseSpeedY;
+                        this.opacity = Math.random() * 0.4 + 0.05;
+                        this.color = Math.random() > 0.5 ? '#10b981' : '#34d399';
+                    }
+                    update() {
+                        const dx = this.x - mouseX;
+                        const dy = this.y - mouseY;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const maxDistance = 150;
+                        
+                        if (distance > 0 && distance < maxDistance) {
+                            const force = (maxDistance - distance) / maxDistance;
+                            this.speedX += (dx / distance) * force * 0.5;
+                            this.speedY += (dy / distance) * force * 0.5;
+                        } else {
+                            this.speedX += (this.baseSpeedX - this.speedX) * 0.05;
+                            this.speedY += (this.baseSpeedY - this.speedY) * 0.05;
+                        }
+                        this.speedX *= 0.95;
+                        this.speedY *= 0.95;
+                        this.x += this.speedX + this.baseSpeedX;
+                        this.y += this.speedY + this.baseSpeedY;
+                        if (this.y > canvas.height + 10 || this.x < -50 || this.x > canvas.width + 50) this.reset(false);
+                    }
+                    draw() {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                        ctx.fillStyle = this.color;
+                        ctx.globalAlpha = this.opacity;
+                        ctx.fill();
+                    }
+                }
+
+                for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+                function animate() {
+                    requestAnimationFrame(animate);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach(p => { p.update(); p.draw(); });
+                    ctx.globalAlpha = 1;
+                }
+                animate();
+            }
+        } catch (e) { console.error('Canvas error:', e); }
+        // Scroll reveal for all pages
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('es-visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.es-reveal').forEach(el => observer.observe(el));
+    })();
+    </script>
 {% endblock %}
