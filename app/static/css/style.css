@@ -4,29 +4,24 @@
 
 /* ---- Variables ---- */
 :root {
-    --green-50:  #f0fdf4;
-    --green-100: #dcfce7;
-    --green-400: #4ade80;
-    --green-500: #22c55e;
-    --green-600: #16a34a;
+    --emerald-50: #ecfdf5;
     --emerald-400: #34d399;
     --emerald-500: #10b981;
     --emerald-600: #059669;
     --emerald-700: #047857;
-    --slate-50:  #f8fafc;
-    --slate-100: #f1f5f9;
-    --slate-200: #e2e8f0;
-    --slate-400: #94a3b8;
-    --slate-500: #64748b;
-    --slate-700: #334155;
+    --slate-50: #f8fafc;
+    --slate-800: #1e293b;
     --slate-900: #0f172a;
-
-    --primary:   var(--emerald-500);
-    --primary-h: var(--emerald-600);
-    --bg:        var(--slate-50);
-    --card-bg:   rgba(255,255,255,0.88);
-    --glass-bg:  rgba(255,255,255,0.72);
-    --border:    rgba(16,185,129,0.12);
+    
+    /* Theme Variables */
+    --text-color: #0f172a;
+    --text-muted: #64748b;
+    --bg-primary: #f8fafc;
+    --card-bg: rgba(255,255,255,0.88);
+    --glass-bg: rgba(255,255,255,0.72);
+    --border: rgba(16,185,129,0.12);
+    --nav-bg: rgba(255, 255, 255, 0.92);
+    
     --shadow-sm: 0 2px 8px rgba(16,185,129,0.08);
     --shadow-md: 0 8px 30px rgba(16,185,129,0.12);
     --shadow-lg: 0 20px 60px rgba(16,185,129,0.16);
@@ -36,6 +31,17 @@
     --radius-lg: 1.5rem;
     --radius-xl: 2rem;
     --transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+}
+
+[data-theme="dark"] {
+    --text-color: #f8fafc;
+    --text-muted: #94a3b8;
+    --bg-primary: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.95);
+    --glass-bg: rgba(30, 41, 59, 0.75);
+    --border: rgba(255, 255, 255, 0.12);
+    --nav-bg: rgba(15, 23, 42, 0.92);
+    --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* ---- Global Reset & Animations ---- */
@@ -53,15 +59,23 @@ html { scroll-behavior: smooth; }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
+    background: var(--bg-primary);
     background-image:
         radial-gradient(at 0% 0%, hsla(152,90%,93%,1) 0, transparent 55%),
         radial-gradient(at 100% 0%, hsla(152,100%,96%,1) 0, transparent 50%),
         radial-gradient(at 100% 100%, hsla(160,80%,92%,1) 0, transparent 45%);
     background-attachment: fixed;
-    color: var(--slate-900);
+    color: var(--text-color);
     min-height: 100vh;
     animation: fadeInUp 0.5s ease both;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="dark"] body {
+    background-image:
+        radial-gradient(at 0% 0%, rgba(16,185,129,0.1) 0, transparent 55%),
+        radial-gradient(at 100% 0%, rgba(16,185,129,0.08) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16,185,129,0.05) 0, transparent 45%);
 }
 
 /* ---- Global Ambient Background ---- */
@@ -89,9 +103,8 @@ body {
    NAVBAR
    ===================================================== */
 .es-navbar {
-    background: rgba(255,255,255,0.9) !important;
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: var(--nav-bg) !important;
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--border);
     box-shadow: 0 1px 40px rgba(16,185,129,0.07);
     padding: 0.8rem 0;
@@ -102,7 +115,7 @@ body {
     display: flex; align-items: center; gap: 10px;
     font-weight: 900; font-size: 1.4rem;
     letter-spacing: -0.5px; text-decoration: none;
-    color: var(--slate-900) !important;
+    color: var(--text-color) !important;
 }
 .es-brand-icon {
     font-size: 1.6rem; color: var(--emerald-500);
@@ -155,7 +168,7 @@ h1:not(.hero-headline):not(.cta-inner h2) {
     font-size: clamp(1.6rem, 3vw, 2.2rem);
     font-weight: 900;
     letter-spacing: -0.5px;
-    color: var(--slate-900);
+    color: var(--text-color);
     position: relative;
     display: inline-block;
     margin-bottom: 1.5rem;
@@ -489,4 +502,28 @@ h3, h4, h5 { font-weight: 700; }
 
 /* =====================================================
    RESPONSIVE
+}
+
+/* Global Bootstrap Overrides */
+.card {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border) !important;
+}
+.card-header, .card-footer {
+    background-color: transparent !important;
+    border-color: var(--border) !important;
+    color: inherit;
+}
+.text-muted {
+    color: var(--text-muted) !important;
+}
+.form-control, .form-select {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border);
+}
+.form-control:focus, .form-select:focus {
+    background-color: var(--card-bg);
+    color: var(--text-color);
 }

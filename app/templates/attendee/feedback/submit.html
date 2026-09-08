@@ -35,7 +35,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Your Comments</label>
-                        <p class="bg-light p-3 rounded border">{{ existing_feedback.comments or "No comments provided." }}</p>
+                        <p class=" p-3 rounded border">{{ existing_feedback.comments or "No comments provided." }}</p>
                     </div>
                 {% else %}
                     <form action="{{ url_for('attendee.submit_feedback', event_id=event.id) }}" method="POST">

@@ -3,7 +3,7 @@ EventSphere - Authentication Forms
 """
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, RadioField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from app.models.user import User, UserRole
 
@@ -49,7 +49,7 @@ class RegistrationForm(FlaskForm):
         DataRequired(message="Please confirm your password"),
         EqualTo('password', message="Passwords must match")
     ])
-    role = SelectField('Role', choices=UserRole.get_choices(), default=UserRole.ATTENDEE)
+    role = RadioField('Role', choices=UserRole.get_choices(), default=UserRole.ATTENDEE)
     submit = SubmitField('Register')
 
     def validate_username(self, field):

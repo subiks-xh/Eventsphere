@@ -11,9 +11,9 @@ main.container { max-width: 100% !important; padding: 0 !important; margin-top: 
 }
 .auth-card {
     width: 100%; max-width: 580px;
-    background: rgba(255,255,255,0.88);
+    background: var(--card-bg);
     backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(16,185,129,0.15);
+    border: 1px solid var(--border);
     border-radius: 1.5rem;
     box-shadow: 0 32px 80px rgba(16,185,129,0.18), 0 8px 24px rgba(0,0,0,0.06);
     padding: 2.5rem;
@@ -32,19 +32,19 @@ main.container { max-width: 100% !important; padding: 0 !important; margin-top: 
 .auth-logo { text-align: center; margin-bottom: 1.75rem; }
 .auth-logo-icon { font-size: 2rem; line-height: 1; color: #10b981; display: block; margin-bottom: 0.5rem; filter: drop-shadow(0 4px 12px rgba(16,185,129,0.4)); }
 .auth-logo-name { font-size: 1.5rem; font-weight: 900; letter-spacing: -0.5px; background: linear-gradient(135deg, #047857, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.auth-title { font-size: 1.4rem; font-weight: 800; color: #0f172a; margin-bottom: 0.25rem; text-align: center; }
-.auth-sub { color: #64748b; font-size: 0.88rem; margin-bottom: 1.5rem; text-align: center; }
+.auth-title { font-size: 1.4rem; font-weight: 800; color: var(--text-color); margin-bottom: 0.25rem; text-align: center !important; }
+.auth-sub { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem; text-align: center !important; }
 
 .auth-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 @media(max-width:480px) { .auth-form-row { grid-template-columns: 1fr; } }
 
 .auth-form-group { margin-bottom: 1.1rem; }
-.auth-label { font-weight: 600; font-size: 0.84rem; color: #334155; display: block; margin-bottom: 0.4rem; }
+.auth-label { font-weight: 600; font-size: 0.84rem; color: var(--text-color); display: block; margin-bottom: 0.4rem; }
 .auth-input {
     width: 100%; padding: 0.75rem 1rem;
-    border: 1.5px solid #e2e8f0; border-radius: 0.7rem;
+    border: 1.5px solid var(--border); border-radius: 0.7rem;
     font-size: 0.92rem; font-weight: 500;
-    background: rgba(255,255,255,0.9);
+    background: transparent; color: var(--text-color);
     transition: all 0.3s ease; outline: none;
     font-family: 'Inter', sans-serif;
     box-sizing: border-box;
@@ -63,25 +63,25 @@ main.container { max-width: 100% !important; padding: 0 !important; margin-top: 
     margin-top: 0.5rem;
 }
 .auth-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(16,185,129,0.5); background: linear-gradient(135deg, #047857, #059669); }
-.auth-divider { text-align: center; margin: 1.5rem 0; color: #94a3b8; font-size: 0.85rem; position: relative; }
+.auth-divider { text-align: center; margin: 1.5rem 0; color: var(--text-muted); font-size: 0.85rem; position: relative; }
 .auth-divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(16,185,129,0.12); }
-.auth-divider span { background: rgba(255,255,255,0.95); padding: 0 12px; position: relative; }
+.auth-divider span { background: var(--card-bg); padding: 0 12px; position: relative; }
 .auth-link { color: #059669; font-weight: 600; text-decoration: none; }
 .auth-link:hover { color: #047857; text-decoration: underline; }
 .error-msg { color: #dc2626; font-size: 0.78rem; margin-top: 0.25rem; display: block; }
 
 .role-selector { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; margin-top: 0.5rem; }
-.role-option input { display: none; }
+.role-option input { display: none !important; }
 .role-option label {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 4px; padding: 0.75rem 0.5rem; border-radius: 0.7rem;
     border: 1.5px solid #e2e8f0; cursor: pointer;
-    font-size: 0.82rem; font-weight: 700; color: #64748b;
+    font-size: 0.82rem; font-weight: 700; color: var(--text-muted);
     transition: all 0.2s ease; text-align: center;
-    background: rgba(255,255,255,0.7);
+    background: var(--card-bg);
 }
 .role-option label i { font-size: 1.3rem; }
-.role-option input:checked + label {
+.role-option input:checked + label, .role-option input:checked ~ label {
     border-color: #10b981; background: rgba(16,185,129,0.08); color: #059669;
     box-shadow: 0 0 0 3px rgba(16,185,129,0.15);
 }
@@ -152,7 +152,7 @@ main.container { max-width: 100% !important; padding: 0 !important; margin-top: 
                 <div class="role-selector">
                     {% for subfield in form.role %}
                     <div class="role-option">
-                        {{ subfield }}
+                        {{ subfield(style="display:none;") }}
                         <label for="{{ subfield.id }}">
                             {% if subfield.data == 'attendee' %}<i class="bi bi-person-fill"></i>
                             {% elif subfield.data == 'organizer' %}<i class="bi bi-calendar-event-fill"></i>

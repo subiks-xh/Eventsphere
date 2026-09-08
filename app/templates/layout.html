@@ -82,6 +82,12 @@
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav">
+                    <!-- Theme Toggle -->
+                    <li class="nav-item me-3 d-flex align-items-center">
+                        <button id="theme-toggle" class="btn btn-link nav-link px-2" aria-label="Toggle Theme" style="color: var(--text-color);">
+                            <i class="bi bi-moon-stars-fill" id="theme-icon"></i>
+                        </button>
+                    </li>
                     {% if current_user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
@@ -121,17 +127,30 @@
 
     <!-- Main Content -->
     <main class="container mt-4">
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        <!-- Toast Notification Container -->
+        <div aria-live="polite" aria-atomic="true" class="position-relative">
+            <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;" id="toastPlacement">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            {% set toast_class = 'bg-success text-white' if category == 'success' else 'bg-danger text-white' if category == 'error' or category == 'danger' else 'bg-warning text-dark' if category == 'warning' else 'bg-primary text-white' %}
+                            <div class="toast align-items-center {{ toast_class }} border-0 es-toast shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                                <div class="d-flex">
+                                    <div class="toast-body fw-bold" style="font-size: 0.95rem;">
+                                        {% if category == 'success' %}<i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                                        {% elif category == 'error' or category == 'danger' %}<i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                                        {% elif category == 'warning' %}<i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+                                        {% else %}<i class="bi bi-info-circle-fill me-2 fs-5"></i>{% endif %}
+                                        {{ message }}
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+        </div>
 
         <!-- Page Content -->
         {% block content %}{% endblock %}
@@ -166,9 +185,44 @@
         
         // Poll every 30 seconds
         setInterval(checkNotifications, 30000);
-    });
     </script>
     {% endif %}
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Initialize Toasts
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+        var toastList = toastElList.map(function(toastEl) {
+            return new bootstrap.Toast(toastEl, { autohide: true, delay: 5000 })
+        });
+        toastList.forEach(toast => toast.show());
+
+        // Theme Toggle Logic
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        function updateThemeIcon(theme) {
+            if (theme === 'dark') {
+                themeIcon.classList.remove('bi-moon-stars-fill');
+                themeIcon.classList.add('bi-sun-fill');
+            } else {
+                themeIcon.classList.remove('bi-sun-fill');
+                themeIcon.classList.add('bi-moon-stars-fill');
+            }
+        }
+        
+        updateThemeIcon(document.documentElement.getAttribute('data-theme'));
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('es-theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+    });
+    </script>
 
     <!-- Vanilla Tilt JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
